@@ -1,7 +1,11 @@
 package com.example.buysell.controllers;
 
 import com.example.buysell.models.Product;
+import com.example.buysell.models.TaskStatus;
+import com.example.buysell.models.User;
 import com.example.buysell.services.ProductService;
+import com.example.buysell.services.TaskStatusService;
+import com.example.buysell.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,11 +22,16 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final UserService userService;
+    private final TaskStatusService taskStatusService;
 
     @GetMapping("/")
     public String products(@RequestParam(name = "title", required = false) String title, Principal principal, Model model) {
         model.addAttribute("products", productService.listProducts(title));
         model.addAttribute("user", productService.getUserByPrincipal(principal));
+        model.addAttribute("users", userService.list());
+        model.addAttribute("statuses", productService.listStatuses());
+
         return "products";
     }
 
@@ -35,15 +44,19 @@ public class ProductController {
     }
 
     @PostMapping("/product/create")
-    public String createProduct(@RequestParam("file1") MultipartFile file1, @RequestParam("file2") MultipartFile file2,
-                                @RequestParam("file3") MultipartFile file3, Product product, Principal principal) throws IOException {
-        productService.saveProduct(principal, product, file1, file2, file3);
+    public String createProduct(@RequestParam("file1") MultipartFile file1, Product product, Principal principal) throws IOException {
+        productService.saveProduct(principal, product, file1);
         return "redirect:/";
     }
 
     @PostMapping("/product/delete/{id}")
     public String deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
+        return "redirect:/";
+    }
+    @GetMapping("/initialize")
+    public String productInfo() {
+        taskStatusService.initialize();
         return "redirect:/";
     }
 }
