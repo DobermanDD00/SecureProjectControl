@@ -14,7 +14,7 @@
 
 <b>Руководитель: </b><a href="/user/${product.lead.id}">${product.lead.name}</a><br>
 <b>Исполнитель: </b><a href="/user/${product.performer.id}">${product.performer.name}</a><br>
-<b>Статус: </b><a href="/user/${product.status.id}">${product.status.title}</a><br>
+<b>Статус: </b>${product.status.title}<br>
 
 </body>
 </html>
