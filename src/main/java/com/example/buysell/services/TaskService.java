@@ -1,10 +1,10 @@
 package com.example.buysell.services;
 
 import com.example.buysell.models.Image;
-import com.example.buysell.models.Product;
+import com.example.buysell.models.Task;
 import com.example.buysell.models.TaskStatus;
 import com.example.buysell.models.User;
-import com.example.buysell.repositories.ProductRepository;
+import com.example.buysell.repositories.TaskRepository;
 import com.example.buysell.repositories.TaskStatusRepository;
 import com.example.buysell.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,30 +19,29 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class ProductService {
-    private final ProductRepository productRepository;
+public class TaskService {
+    private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final TaskStatusRepository taskStatusRepository;
 
-    public List<Product> listProducts(String title) {
-        if (title != null) return productRepository.findByTitle(title);
-        return productRepository.findAll();
+    public List<Task> listTasks(String title) {
+        if (title != null) return taskRepository.findByTitle(title);
+        return taskRepository.findAll();
     }
 
-    public void saveProduct(Principal principal, Product product, MultipartFile file1) throws IOException {
-//        product.setLead(getUserByPrincipal(principal));
+    public void saveTask(Principal principal, Task task, MultipartFile file1) throws IOException {
+//        task.setLead(getUserByPrincipal(principal));
         Image image1;
 
         if (file1.getSize() != 0) {
             image1 = toImageEntity(file1);
             image1.setPreviewImage(true);
-            product.addImageToProduct(image1);
+            task.addImageToTask(image1);
         }
 
-        log.info("Saving new Product. Title: {}; Author email: {}", product.getTitle(), product.getLead().getId());
-        Product productFromDb = productRepository.save(product);
-//        productFromDb.setPreviewImageId(productFromDb.getImages().get(0).getId());
-//        productRepository.save(product);
+        log.info("Saving new Task. Title: {}; Author email: {}", task.getTitle(), task.getLead().getId());
+        Task taskFromDb = taskRepository.save(task);
+
     }
     public List<TaskStatus> listStatuses() {
         return taskStatusRepository.findAll();
@@ -64,11 +63,11 @@ public class ProductService {
         return image;
     }
 
-    public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+    public void deleteTask(Long id) {
+        taskRepository.deleteById(id);
     }
 
-    public Product getProductById(Long id) {
-        return productRepository.findById(id).orElse(null);
+    public Task getTaskById(Long id) {
+        return taskRepository.findById(id).orElse(null);
     }
 }

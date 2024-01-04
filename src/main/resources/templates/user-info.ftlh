@@ -8,13 +8,13 @@
 <h3>Подробная информация о пользователе ${user.name}</h3>
 <b>Номер телефона: </b> ${user.phoneNumber}<br>
 <b>Email: </b> ${user.email}<br>
-<#--<h4>Товары пользователя ${user.name}</h4>-->
-<#--<#list products as product>-->
+<#--<h4>Задачи пользователя ${user.name}</h4>-->
+<#--<#list products as task>-->
 <#--    <div>-->
-<#--        <p><b>${product.title}</b> ${product.description} руб. | <a href="/product/${product.id}">Подробнее...</a></p>-->
+<#--        <p><b>${task.title}</b> ${task.description} руб. | <a href="/task/${task.id}">Подробнее...</a></p>-->
 <#--    </div>-->
 <#--    <#else>-->
-<#--    <h3>Товаров нет</h3>-->
+<#--    <h3>Задач нет</h3>-->
 <#--</#list>-->
 <#if errorMessage??>
     <h2 style="color: red">${errorMessage}</h2>

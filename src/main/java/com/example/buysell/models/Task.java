@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "products")
+@Table(name = "tasks")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
@@ -40,7 +40,7 @@ public class Product {
     private LocalDateTime dateOfCreated;
     //____________________
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY,
-            mappedBy = "product")
+            mappedBy = "task")
     private List<Image> images = new ArrayList<>();
     private Long previewImageId;
 //________________________
@@ -52,8 +52,8 @@ public class Product {
     }
 
 
-    public void addImageToProduct(Image image) {
-        image.setProduct(this);
+    public void addImageToTask(Image image) {
+        image.setTask(this);
         images.add(image);
     }
 }
