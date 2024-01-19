@@ -15,19 +15,19 @@ public class TaskStatusService {
     private final TaskStatusRepository taskStatusRepository;
 
     public void initialize(){
-        TaskStatus taskStatus = new TaskStatus(0, "Отправлена на выполнение");
+        TaskStatus taskStatus = new TaskStatus(1, "Отправлена на выполнение");
         taskStatusRepository.save(taskStatus);
-        taskStatus = new TaskStatus(1, "Возвращена для корректировки");
+        taskStatus = new TaskStatus(2, "Возвращена для корректировки");
         taskStatusRepository.save(taskStatus);
-        taskStatus = new TaskStatus(2, "В процессе выполнения");
+        taskStatus = new TaskStatus(3, "В процессе выполнения");
         taskStatusRepository.save(taskStatus);
-        taskStatus = new TaskStatus(3, "Отправлено на проверку");
+        taskStatus = new TaskStatus(4, "Отправлено на проверку");
         taskStatusRepository.save(taskStatus);
-        taskStatus = new TaskStatus(4, "Завершена");
+        taskStatus = new TaskStatus(5, "Завершена");
         taskStatusRepository.save(taskStatus);
-        taskStatus = new TaskStatus(5, "Возвращена на доработку");
+        taskStatus = new TaskStatus(6, "Возвращена на доработку");
         taskStatusRepository.save(taskStatus);
-        taskStatus = new TaskStatus(6, "Прочее");
+        taskStatus = new TaskStatus(7, "Прочее");
         taskStatusRepository.save(taskStatus);
         log.info("INITIALIZE STATUSES");
 

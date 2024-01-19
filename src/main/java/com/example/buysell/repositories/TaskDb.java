@@ -1,5 +1,8 @@
-package com.example.buysell.models;
+package com.example.buysell.repositories;
 
+import com.example.buysell.models.TaskActive;
+import com.example.buysell.models.TaskStatus;
+import com.example.buysell.models.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,17 +12,20 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "tasks")
+@Table(name = "tasksDb")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Task {
+public class TaskDb {
+//    public static final int CURRENT_SECURITY = 0;
+//    public static final int SECURITY_OFF = 0;
+//    public static final int SECURITY_STANDARD = 1;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String title;
+    private byte[] title;
     @Column(name = "description", columnDefinition = "text")
-    private String description;
+    private byte[] description;
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
     @JoinColumn(name = "lead_id")
     private User lead;
@@ -33,27 +39,19 @@ public class Task {
     @JoinColumn(name = "active_id")
     private TaskActive active;
     @Column(name = "history", columnDefinition = "text")
-    private String history;
+    private byte[] history;
     private LocalDateTime dateOfCreated;
-    //____________________
-//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY,
-//            mappedBy = "task")
-//    private List<Image> images = new ArrayList<>();
-//    private Long previewImageId;
-//________________________
 
-
-    @PrePersist
-    private void init() {
-        dateOfCreated = LocalDateTime.now();
-        history = "Задача создана, время создания " + dateOfCreated.toString()+"\n";
-    }
-    public void addToHistory(String str){
-        this.history = history + str;
-    }
-
-//    public void addImageToTask(Image image) {
-//        image.setTask(this);
-//        images.add(image);
+//    public TaskDb(Task task){
+//        this.id = task.getId();
+//        this.title = task.getTitle().getBytes();
+//        this.description = task.getDescription().getBytes();
+//        this.lead = task.getLead();
+//        this.performer = task.getPerformer();
+//        this.status = task.getStatus();
+//        this.active = task.getActive();
+//        this.history = task.getHistory().getBytes();
 //    }
+
 }
+

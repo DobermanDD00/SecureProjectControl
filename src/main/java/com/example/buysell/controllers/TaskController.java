@@ -2,7 +2,6 @@ package com.example.buysell.controllers;
 
 import com.example.buysell.models.Task;
 import com.example.buysell.services.TaskService;
-import com.example.buysell.services.TaskStatusService;
 import com.example.buysell.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -21,7 +20,6 @@ import java.security.Principal;
 public class TaskController {
     private final TaskService taskService;
     private final UserService userService;
-    private final TaskStatusService taskStatusService;
 
     @GetMapping("/")
     public String tasks(@RequestParam(name = "title", required = false) String title, Principal principal, Model model) {
@@ -33,13 +31,32 @@ public class TaskController {
         return "tasks";
     }
 
+    @GetMapping("/task/edit/{id}")
+    public String taskEdit(@PathVariable Long id, Model model, Principal principal){
+        // TODO проверки на права доступа
+        Task task = taskService.getTaskById(id);
+        model.addAttribute("task", task);
+        model.addAttribute("user", taskService.getUserByPrincipal(principal));
+        model.addAttribute("users", userService.list());
+        model.addAttribute("statuses", taskService.listStatuses());
+        return "task-edit";
+    }
+    @PostMapping("/task/update/{id}")
+    public String taskUpdate(@PathVariable Long id, Task task, Model model){
+        // TODO проверки на права доступа
+        Task taskOld = taskService.getTaskById(id);
+        taskService.taskUpdate(task, taskOld);
+        return "redirect:/"; //TODO не работает
+    }
+
     @GetMapping("/task/{id}")
     public String taskInfo(@PathVariable Long id, Model model) {
         Task task = taskService.getTaskById(id);
         model.addAttribute("task", task);
-        model.addAttribute("images", task.getImages());
+//        model.addAttribute("images", task.getImages());
         return "task-info";
     }
+
 
     @PostMapping("/task/create")
     public String createTask(@RequestParam("file1") MultipartFile file1, Task task, Principal principal) throws IOException {
@@ -52,9 +69,5 @@ public class TaskController {
         taskService.deleteTask(id);
         return "redirect:/";
     }
-    @GetMapping("/initialize")
-    public String taskInfo() {
-        taskStatusService.initialize();
-        return "redirect:/";
-    }
+
 }

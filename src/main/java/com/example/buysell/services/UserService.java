@@ -62,4 +62,20 @@ public class UserService {
         }
         userRepository.save(user);
     }
+    public void initialize(){
+        User user;
+        user = new User();
+        user.setName("Михаил");
+        user.setEmail("Mih@gmail.com");
+        user.setPhoneNumber("1");
+        user.setPassword("Mih@gmail.com");
+        createUser(user);
+        user = new User();
+        user.setName("Николай");
+        user.setEmail("Nik@gmail.com");
+        user.setPhoneNumber("2");
+        user.setPassword("Nik@gmail.com");
+        createUser(user);
+        log.info("INITIALIZE USERS");
+    }
 }

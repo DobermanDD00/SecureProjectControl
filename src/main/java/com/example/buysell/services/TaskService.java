@@ -29,20 +29,7 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
-    public void saveTask(Principal principal, Task task, MultipartFile file1) throws IOException {
-//        task.setLead(getUserByPrincipal(principal));
-        Image image1;
 
-        if (file1.getSize() != 0) {
-            image1 = toImageEntity(file1);
-            image1.setPreviewImage(true);
-            task.addImageToTask(image1);
-        }
-
-        log.info("Saving new Task. Title: {}; Author email: {}", task.getTitle(), task.getLead().getId());
-        Task taskFromDb = taskRepository.save(task);
-
-    }
     public List<TaskStatus> listStatuses() {
         return taskStatusRepository.findAll();
     }
@@ -61,6 +48,47 @@ public class TaskService {
         image.setSize(file.getSize());
         image.setBytes(file.getBytes());
         return image;
+    }
+
+    public void saveTask(Principal principal, Task task, MultipartFile file1) throws IOException {
+//        task.setLead(getUserByPrincipal(principal));
+        Image image1;
+
+        if (file1.getSize() != 0) {
+            image1 = toImageEntity(file1);
+            image1.setPreviewImage(true);
+//            task.addImageToTask(image1);
+        }
+
+        log.info("Saving new Task. Title: {}; Author email: {}", task.getTitle(), task.getLead().getId());
+        Task taskFromDb = taskRepository.save(task);
+
+    }
+
+    public void taskUpdate(Task newTask, Task oldTask) {
+        if (!newTask.getTitle().equals(oldTask.getTitle())){
+            oldTask.addToHistory("Изменение названия с " +oldTask.getTitle()+" на " + newTask.getTitle()+"\n");
+            oldTask.setTitle(newTask.getTitle());
+        }
+        if (!newTask.getDescription().equals(oldTask.getDescription())){
+            oldTask.addToHistory("Изменение описания с " +oldTask.getDescription()+" на " + newTask.getDescription()+"\n");
+            oldTask.setDescription(newTask.getDescription());
+        }
+        if (!newTask.getLead().equals(oldTask.getLead())){
+            oldTask.addToHistory("Изменение руководителя с " +oldTask.getLead().getName()+" на " + newTask.getLead().getName()+"\n");
+            oldTask.setLead(newTask.getLead());
+        }
+        if (!newTask.getPerformer().equals(oldTask.getPerformer())){
+            oldTask.addToHistory("Изменение исполнителя с " +oldTask.getLead().getName()+" на " + newTask.getPerformer().getName()+"\n");
+            oldTask.setPerformer(newTask.getPerformer());
+        }
+        if (!newTask.getStatus().equals(oldTask.getStatus())){
+            oldTask.addToHistory("Изменение статуса с " +oldTask.getStatus().getTitle()+" на " + newTask.getStatus().getTitle()+"\n");
+            oldTask.setStatus(newTask.getStatus());
+        }
+
+
+        taskRepository.save(oldTask);
     }
 
     public void deleteTask(Long id) {
