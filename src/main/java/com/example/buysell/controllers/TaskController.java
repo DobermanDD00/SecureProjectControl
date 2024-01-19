@@ -1,6 +1,6 @@
 package com.example.buysell.controllers;
 
-import com.example.buysell.models.Task;
+import com.example.buysell.models.TaskPackage.Task;
 import com.example.buysell.services.TaskService;
 import com.example.buysell.services.UserService;
 import lombok.RequiredArgsConstructor;

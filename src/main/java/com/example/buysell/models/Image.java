@@ -1,5 +1,6 @@
 package com.example.buysell.models;
 
+import com.example.buysell.models.TaskPackage.Task;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

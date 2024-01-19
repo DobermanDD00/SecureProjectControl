@@ -8,6 +8,8 @@
 <h3>Подробная информация о пользователе ${user.name}</h3>
 <b>Номер телефона: </b> ${user.phoneNumber}<br>
 <b>Email: </b> ${user.email}<br>
+<b>Имя пользователя: </b>${user.name}<br>
+<b>Пароль пользователя: </b>${user.password}<br>
 <#--<h4>Задачи пользователя ${user.name}</h4>-->
 <#--<#list products as task>-->
 <#--    <div>-->

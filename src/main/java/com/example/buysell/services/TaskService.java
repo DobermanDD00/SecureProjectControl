@@ -1,12 +1,10 @@
 package com.example.buysell.services;
 
 import com.example.buysell.models.Image;
-import com.example.buysell.models.Task;
-import com.example.buysell.models.TaskStatus;
+import com.example.buysell.models.TaskPackage.Task;
+import com.example.buysell.models.TaskPackage.Status;
 import com.example.buysell.models.User;
-import com.example.buysell.repositories.TaskRepository;
-import com.example.buysell.repositories.TaskStatusRepository;
-import com.example.buysell.repositories.UserRepository;
+import com.example.buysell.repositories.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +18,8 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class TaskService {
-    private final TaskRepository taskRepository;
+//    private final TaskRepository taskRepository;
+    private final TaskRepositoryCustom taskRepository;
     private final UserRepository userRepository;
     private final TaskStatusRepository taskStatusRepository;
 
@@ -30,7 +29,7 @@ public class TaskService {
     }
 
 
-    public List<TaskStatus> listStatuses() {
+    public List<Status> listStatuses() {
         return taskStatusRepository.findAll();
     }
 
@@ -96,6 +95,7 @@ public class TaskService {
     }
 
     public Task getTaskById(Long id) {
-        return taskRepository.findById(id).orElse(null);
+        return taskRepository.findById(id);
+//        return taskRepository.findById(id).orElse(null);
     }
 }

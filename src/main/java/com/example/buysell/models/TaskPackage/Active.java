@@ -1,4 +1,4 @@
-package com.example.buysell.models;
+package com.example.buysell.models.TaskPackage;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,16 +7,13 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "task_statuses")
+@Table(name = "task_actives")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskStatus {
+public class Active {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private long id;
-    @Column(name = "title")
-
+    private int id;
     private String title;
 }

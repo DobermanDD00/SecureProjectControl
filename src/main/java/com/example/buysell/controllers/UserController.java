@@ -40,4 +40,9 @@ public class UserController {
 //        model.addAttribute("products", user.getProducts());
         return "user-info";
     }
+    @GetMapping("/test1")
+    public String test(User user, Model model){
+        model.addAttribute("user", user);
+        return "test1";
+    }
 }
