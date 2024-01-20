@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskRole {
+public class TaskUserRole {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

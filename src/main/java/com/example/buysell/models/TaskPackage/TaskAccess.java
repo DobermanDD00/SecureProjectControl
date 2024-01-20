@@ -13,10 +13,11 @@ import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskAsses {
+public class TaskAccess {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    private String str;
 
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)//TODO проверить удаление данных записай при удалении исходной задачи
     @JoinColumn(name = "task_id")
@@ -26,10 +27,16 @@ public class TaskAsses {
     private User user;
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")
-    private TaskRole role;
+    private TaskUserRole role;
     @JoinColumn(name = "task_key")
     private byte[] taskKey;
 
+
+    public boolean isEmpty(){
+        if (id == 0 && str == "" && user == null && role == null && taskKey == null)
+            return true;
+        return false;
+    }
 
 
 

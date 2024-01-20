@@ -1,10 +1,8 @@
 package com.example.buysell.controllers;
 
-import com.example.buysell.models.TaskPackage.TaskActive;
-import com.example.buysell.models.TaskPackage.TaskAsses;
-import com.example.buysell.models.Child;
-import com.example.buysell.models.Parent;
+import com.example.buysell.models.TaskPackage.TaskAccess;
 import com.example.buysell.models.TaskPackage.Task;
+import com.example.buysell.models.TaskPackage.TaskAccessCreationDto;
 import com.example.buysell.repositories.ChildRepository;
 import com.example.buysell.repositories.ParentRepository;
 import com.example.buysell.services.TaskService;
@@ -17,8 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -76,42 +72,33 @@ public class TaskController {
         taskService.deleteTask(id);
         return "redirect:/";
     }
-    @GetMapping("/new1")
+    @GetMapping("/create-new-task")
     public String newTasks1(Model model) {
         model.addAttribute("users", userService.list());
         model.addAttribute("rolesTask", taskService.listRoles());
+        model.addAttribute("statuses", taskService.listStatuses());
         model.addAttribute("task", new Task());
 
-        List<TaskAsses> asses = new ArrayList<>();
-        for (int i = 0; i < 10; i++)
-            asses.add(new TaskAsses());
 
-        model.addAttribute("assesToTask", new TaskAsses());
 
-        return "tasks1";
+        TaskAccessCreationDto accessesForm = new TaskAccessCreationDto();
+
+        for (int i = 0; i < 5; i++){
+            accessesForm.addAccess(new TaskAccess());
+//            accessesForm.getAccesses().get(i).setId(i);
+        }
+
+        model.addAttribute("accesses", accessesForm.getAccesses());
+
+        model.addAttribute("form", accessesForm);
+
+        return "create-task";
     }
-    @PostMapping("/create1")
-    public String createTasks1(@ModelAttribute("task") Task task, @ModelAttribute("assesToTask") TaskAsses asses ) {
-        taskService.saveTaskAndAsses(task, asses);
 
-
-        return "redirect:/new1";
-    }
-    @GetMapping("/create2")
-    public String create2() {
-        Parent parent1 = new Parent();
-        parent1.setTitle("11");
-        Child child1 = new Child();
-        child1.setTitle("112");
-
-
-        Parent parent2 = parentRepository.save(parent1);
-
-
-        child1.setParent(parent2);
-        childRepository.save(child1);
-
-        return "redirect:/new1";
+    @PostMapping("/save-task")
+    public String create2(@ModelAttribute Task task, @ModelAttribute TaskAccessCreationDto form, Model model) {
+        taskService.saveTaskAndAccesses(task, form.getAccesses());
+        return "redirect:/";
     }
 
 

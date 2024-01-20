@@ -1,8 +1,8 @@
 package com.example.buysell.services;
 
 import com.example.buysell.models.Image;
-import com.example.buysell.models.TaskPackage.TaskAsses;
-import com.example.buysell.models.TaskPackage.TaskRole;
+import com.example.buysell.models.TaskPackage.TaskAccess;
+import com.example.buysell.models.TaskPackage.TaskUserRole;
 import com.example.buysell.models.TaskPackage.Task;
 import com.example.buysell.models.TaskPackage.TaskStatus;
 import com.example.buysell.models.User;
@@ -27,7 +27,7 @@ public class TaskService {
     private final TaskAssesRepository taskAssesRepository;
 
 
-    public void initialize(){
+    public void initialize() {
         TaskStatus taskStatus;
         taskStatus = new TaskStatus(1, "Отправлена на выполнение");
         taskStatusRepository.save(taskStatus);
@@ -45,12 +45,12 @@ public class TaskService {
         taskStatusRepository.save(taskStatus);
         log.info("INITIALIZE STATUSES TASK");
 
-        TaskRole taskRole;
-        taskRole = new TaskRole(1, "Руководитель");
+        TaskUserRole taskRole;
+        taskRole = new TaskUserRole(1, "Руководитель");
         taskRoleRepository.save(taskRole);
-        taskRole = new TaskRole(2, "Исполнитель");
+        taskRole = new TaskUserRole(2, "Исполнитель");
         taskRoleRepository.save(taskRole);
-        taskRole = new TaskRole(3, "Наблюдатель");
+        taskRole = new TaskUserRole(3, "Наблюдатель");
         taskRoleRepository.save(taskRole);
         log.info("INITIALIZE ROLES TASK");
 
@@ -97,24 +97,35 @@ public class TaskService {
         taskRepository.save(task);
 
     }
-    public void saveTaskAndAsses(Task task, TaskAsses asses){
+
+    public void saveTaskAndAccesses(Task task, List<TaskAccess> accesses) {
         long id = taskRepository.save(task);
-        asses.setTaskDb(taskRepository.findTaskDbById(id));
-        taskAssesRepository.save(asses);
+        TaskDb taskDb = taskRepository.findTaskDbById(id);
+        for (TaskAccess access : accesses) {
+            access.setTaskDb(taskDb);
+        }
+        saveAccesses(accesses);
+    }
+
+    public void saveAccesses(List<TaskAccess> accesses) {
+        for (TaskAccess access : accesses) {
+            if (access.isEmpty()) continue;
+            taskAssesRepository.save(access);
+        }
     }
 
     public void taskUpdate(Task newTask, Task oldTask) {
-        if (!newTask.getTitle().equals(oldTask.getTitle())){
-            oldTask.addToHistory("Изменение названия с " +oldTask.getTitle()+" на " + newTask.getTitle()+"\n");
+        if (!newTask.getTitle().equals(oldTask.getTitle())) {
+            oldTask.addToHistory("Изменение названия с " + oldTask.getTitle() + " на " + newTask.getTitle() + "\n");
             oldTask.setTitle(newTask.getTitle());
         }
-        if (!newTask.getDescription().equals(oldTask.getDescription())){
-            oldTask.addToHistory("Изменение описания с " +oldTask.getDescription()+" на " + newTask.getDescription()+"\n");
+        if (!newTask.getDescription().equals(oldTask.getDescription())) {
+            oldTask.addToHistory("Изменение описания с " + oldTask.getDescription() + " на " + newTask.getDescription() + "\n");
             oldTask.setDescription(newTask.getDescription());
         }
 
-        if (!newTask.getStatus().equals(oldTask.getStatus())){
-            oldTask.addToHistory("Изменение статуса с " +oldTask.getStatus().getTitle()+" на " + newTask.getStatus().getTitle()+"\n");
+        if (!newTask.getStatus().equals(oldTask.getStatus())) {
+            oldTask.addToHistory("Изменение статуса с " + oldTask.getStatus().getTitle() + " на " + newTask.getStatus().getTitle() + "\n");
             oldTask.setStatus(newTask.getStatus());
         }
 
@@ -132,7 +143,7 @@ public class TaskService {
     }
 
 
-    public List<TaskRole> listRoles() {
+    public List<TaskUserRole> listRoles() {
         return taskRoleRepository.findAll();
     }
 

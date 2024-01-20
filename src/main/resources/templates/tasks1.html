@@ -15,21 +15,45 @@
         <label>Описание: </label>
         <input type="text" th:field="*{description}" placeholder="Описание задачи" />
     </div>
-    <div>
+
+
+
+
+    <div  th:object="${asses}">
         <label>Лицо 1: </label>
-        <select th:field="*{user}" th:object="${assesToTask}">
+        <select th:field="*{user}">
             <option th:value="0" selected="selected">Не выбрано</option>
             <option th:each="user : ${users}"
                     th:text="${user.name}"
                     th:value="${user.id}"></option>
         </select>
-        <select th:field="*{role}" th:object="${assesToTask}">
+        <select th:field="*{role}">
             <option th:value="0" selected="selected">Не выбрано</option>
             <option th:each="role : ${rolesTask}"
                     th:text="${role.name}"
                     th:value="${role.id}"></option>
         </select>
     </div>
+
+
+
+    <div  th:object="${assesToTask}">
+        <label>Лицо 1: </label>
+        <select th:field="*{user}">
+            <option th:value="0" selected="selected">Не выбрано</option>
+            <option th:each="user : ${users}"
+                    th:text="${user.name}"
+                    th:value="${user.id}"></option>
+        </select>
+        <select th:field="*{role}">
+            <option th:value="0" selected="selected">Не выбрано</option>
+            <option th:each="role : ${rolesTask}"
+                    th:text="${role.name}"
+                    th:value="${role.id}"></option>
+        </select>
+    </div>
+
+
 
 <!--    <div>-->
 <!--        <label>Date:</label>-->

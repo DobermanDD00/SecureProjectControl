@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Spring Boot Thymeleaf Application - Form Samples - Inputs</title>
+</head>
+<body>
+<!--Отображение списка для вывода-->
+<!--<table>-->
+<!--    <thead>-->
+<!--    <tr>-->
+<!--        <th> id </th>-->
+<!--        <th> str </th>-->
+<!--    </tr>-->
+<!--    </thead>-->
+<!--    <tbody>-->
+<!--    <tr th:if="${accesses.empty}">-->
+<!--        <td colspan="2"> No accesses Available </td>-->
+<!--    </tr>-->
+<!--    <tr th:each="access : ${accesses}">-->
+<!--        <td><span th:text="${access.id}"> Title </span></td>-->
+<!--        <td><span th:text="${access.str}"> Author </span></td>-->
+<!--    </tr>-->
+<!--    </tbody>-->
+<!--</table>-->
+<h3>Создать новую задачу</h3>
+
+<form th:method="post" th:action="@{/save-task}" th:object="${task}">
+    <fieldset>
+        <div>
+            <label>Название: </label>
+            <input type="text" th:field="*{title}" placeholder="Название задачи"/>
+        </div>
+        <div>
+            <label>Описание: </label>
+            <input type="text" th:field="*{description}" placeholder="Описание задачи"/>
+        </div>
+        <div>
+            <label>Статус: </label>
+            <select th:field="*{status}">
+                <option th:value="0" selected="selected">Не выбрано</option>
+                <option th:each="status : ${statuses}"
+                        th:text="${status.title}"
+                        th:value="${status.id}"></option>
+            </select>
+        </div>
+
+
+        <!--Отображение списка для ввода-->
+        <form th:object="${form}" method="post">
+            <!--        <form action="#" th:action="@{/create2}" th:object="${form}" method="post">-->
+            <fieldset>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Должность</th>
+                        <th>Пользователь</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="access, itemStat : *{accesses}">
+                        <!--                <td><input th:field="*{accesses[__${itemStat.index}__].id}" /></td>-->
+                        <td>
+                            <select th:field="*{accesses[__${itemStat.index}__].role}">
+                                <option th:value="0" selected="selected">Не выбрано</option>
+                                <option th:each="role : ${rolesTask}"
+                                        th:text="${role.name}"
+                                        th:value="${role.id}"></option>
+                            </select>
+                        </td>
+                        <td>
+                            <select th:field="*{accesses[__${itemStat.index}__].user}">
+                                <option th:value="0" selected="selected">Не выбрано</option>
+                                <option th:each="user : ${users}"
+                                        th:text="${user.name}"
+                                        th:value="${user.id}"></option>
+                            </select>
+                        </td>
+                        <td><input th:field="*{accesses[__${itemStat.index}__].str}"/></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <!--        <input type="submit" id="submitButton1" th:value="Save">-->
+                <!--        <input type="reset" id="resetButton1" name="reset" th:value="Reset"/>-->
+            </fieldset>
+
+        </form>
+        <input type="submit" id="submitButton2" th:value="Save">
+        <input type="reset" id="resetButton2" name="reset" th:value="Reset"/>
+    </fieldset>
+</form>
+</body>
+</html>
