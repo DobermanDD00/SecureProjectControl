@@ -107,6 +107,21 @@ public class TaskService {
         saveAccesses(accesses);
     }
 
+    public void updateTaskAndAccesses(Task newTask, List<TaskAccess> newAccesses) {
+        updateTask(newTask);
+
+        List<TaskAccess> oldAccesses = taskAssesRepository.findByTaskDbId(newTask.getId());
+        taskAssesRepository.deleteByTaskDbId(newTask.getId());
+        //TODO сравнение и обновление доступов Спросить Олега как это делать нормально
+
+
+        newAccesses.forEach((s)->s.setTaskDb(taskRepository.findTaskDbById(newTask.getId())));
+        newAccesses.removeIf(n -> (!n.isCorrect()));
+        saveAccesses(newAccesses);
+
+
+    }
+
     public void saveAccesses(List<TaskAccess> accesses) {
         for (TaskAccess access : accesses) {
             if (access.isEmpty()) continue;
@@ -114,7 +129,16 @@ public class TaskService {
         }
     }
 
-    public void taskUpdate(Task newTask, Task oldTask) {
+    public List<TaskAccess> getAccessesToTaskById(long taskId) {
+        return taskAssesRepository.findByTaskDbId(taskId);
+    }
+
+    public void deleteAccessesToTaskById(long taskId) {
+        taskAssesRepository.deleteByTaskDbId(taskId);
+    }
+
+    public void updateTask(Task newTask) {
+        Task oldTask = taskRepository.findTaskById(newTask.getId());
         if (!newTask.getTitle().equals(oldTask.getTitle())) {
             oldTask.addToHistory("Изменение названия с " + oldTask.getTitle() + " на " + newTask.getTitle() + "\n");
             oldTask.setTitle(newTask.getTitle());
@@ -128,8 +152,6 @@ public class TaskService {
             oldTask.addToHistory("Изменение статуса с " + oldTask.getStatus().getTitle() + " на " + newTask.getStatus().getTitle() + "\n");
             oldTask.setStatus(newTask.getStatus());
         }
-
-
         taskRepository.save(oldTask);
     }
 

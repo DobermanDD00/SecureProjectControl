@@ -32,7 +32,7 @@
 </#list>
 <#if user.email??>
     <hr>
-    <h4><a href="/create-new-task">Создать новую задачу</a></h4>
+    <h4><a href="/task/create">Создать новую задачу</a></h4>
 
 </#if>
 </body>

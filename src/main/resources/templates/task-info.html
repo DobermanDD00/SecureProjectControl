@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Подробная информация о задаче</title>
+</head>
+<body>
+<h2>Подробная информация о задаче</h2>
+<table>
+    <caption><h4>Основная информация</h4></caption>
+    <div th:object="${task}">
+
+        <tr>
+            <td>Название</td>
+            <td><b th:text="*{title}"></b></td>
+        </tr>
+        <tr>
+            <td>Номер</td>
+            <td><b th:text="*{id}"></b></td>
+        </tr>
+        <tr>
+            <td>Описание</td>
+            <td><b th:text="*{description}"></b></td>
+        </tr>
+        <tr>
+            <td>Статус</td>
+            <td><b th:text="*{status.title}"></b></td>
+        </tr>
+        <!--        <tr>-->
+        <!--            <td>Активность</td>-->
+        <!--            <td><b th:text="*{active.title}"></b></td>-->
+        <!--        </tr>-->
+        <tr>
+            <td>Дата создания</td>
+            <td><b th:text="*{dateOfCreated}"></b></td>
+<!--            TODO пофиксить проблема в инициальзации при создании объекта почему дата обновляется на текущую-->
+        </tr>
+        <tr>
+            <td>История изменений</td>
+            <td><span style="white-space: pre-line"><b th:text="*{history}"></b></span></td>
+        </tr>
+    </div>
+</table>
+<table>
+    <caption><h4>Доступ к задаче</h4></caption>
+    <tr th:if="${accesses.empty}">
+        <td colspan="2">Отсутствуют лица имеющие допуск к данной задаче</td>
+    </tr>
+    <tr th:each="access : ${accesses}">
+        <div th:object="${access}">
+            <td>Пользователь</td>
+            <td><b th:text="*{role.name}"></b></td>
+            <td><b th:text="*{user.name}"></b></td>
+        </div>
+    </tr>
+</table>
+
+<form th:action="@{/task/edit/} + ${task.id}">
+    <input type="submit" value="Редактировать задачу"/>
+</form>
+
+<!--    <div>-->
+<!--        <label>Date:</label>-->
+<!--        <input type="text" th:field="*{dateField}" placeholder="yyyy-MM-dd" />-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <label>Integer:</label>-->
+<!--        <input type="number" th:field="*{numberField}" placeholder="integer" />-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <label>Double:</label>-->
+<!--        <input type="text" th:field="*{doubleField}" placeholder="double" />-->
+<!--    </div>-->
+
+<!--    <div>-->
+<!--        <label>Color:</label>-->
+<!--        <input type="color" th:field="*{colorField}" placeholder="color" />-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <label>Date time:</label>-->
+<!--        <input type="datetime-local" th:field="*{dateTimeField}" placeholder="date" />-->
+<!--    </div>-->
+
+
+</body>
+
+</html>

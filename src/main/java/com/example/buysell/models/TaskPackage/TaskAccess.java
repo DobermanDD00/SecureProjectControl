@@ -33,9 +33,11 @@ public class TaskAccess {
 
 
     public boolean isEmpty(){
-        if (id == 0 && str == "" && user == null && role == null && taskKey == null)
-            return true;
-        return false;
+        return id == 0 && taskDb == null && user == null && role == null && taskKey == null;
+    }
+    public boolean isCorrect(){
+        return taskDb != null && user != null && role != null;
+
     }
 
 

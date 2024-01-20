@@ -46,10 +46,9 @@ public class TaskDb {
         this.id = task.getId();
         this.title = task.getTitle().getBytes();
         this.description = task.getDescription().getBytes();
-
         this.status = task.getStatus();
         this.active = task.getActive();
-
+        this.dateOfCreated = task.getDateOfCreated();
         this.history = task.getHistory().getBytes();
     }
 
@@ -58,9 +57,9 @@ public class TaskDb {
         task.setId(this.id);
         task.setTitle(new String(this.title));
         task.setDescription(new String(this.description));
-
         task.setStatus(this.status);
         task.setActive(this.active);
+        task.setDateOfCreated(this.dateOfCreated);
         task.setHistory(new String(this.history));
         return task;
 
