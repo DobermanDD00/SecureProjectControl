@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface TaskRepositoryDb extends JpaRepository<TaskDb, Long> {
+public interface TaskDbRepository extends JpaRepository<TaskDb, Long> {
     List<TaskDb> findByTitle(String title);
 
 

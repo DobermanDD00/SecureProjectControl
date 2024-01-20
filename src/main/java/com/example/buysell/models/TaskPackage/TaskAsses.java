@@ -1,6 +1,7 @@
 package com.example.buysell.models.TaskPackage;
 
 import com.example.buysell.models.User;
+import com.example.buysell.repositories.TaskDb;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,19 +13,20 @@ import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Asses {
+public class TaskAsses {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
-    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)//TODO проверить удаление данных записай при удалении исходной задачи
     @JoinColumn(name = "task_id")
-    private Task task;
+    private TaskDb taskDb;
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")
-    private Long role;
+    private TaskRole role;
     @JoinColumn(name = "task_key")
     private byte[] taskKey;
 

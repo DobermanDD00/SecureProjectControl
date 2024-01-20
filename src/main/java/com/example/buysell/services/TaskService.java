@@ -1,8 +1,10 @@
 package com.example.buysell.services;
 
 import com.example.buysell.models.Image;
+import com.example.buysell.models.TaskPackage.TaskAsses;
+import com.example.buysell.models.TaskPackage.TaskRole;
 import com.example.buysell.models.TaskPackage.Task;
-import com.example.buysell.models.TaskPackage.Status;
+import com.example.buysell.models.TaskPackage.TaskStatus;
 import com.example.buysell.models.User;
 import com.example.buysell.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +20,42 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class TaskService {
-//    private final TaskRepository taskRepository;
-    private final TaskRepositoryCustom taskRepository;
     private final UserRepository userRepository;
+    private final TaskRepositoryCustom taskRepository;
     private final TaskStatusRepository taskStatusRepository;
+    private final TaskRoleRepository taskRoleRepository;
+    private final TaskAssesRepository taskAssesRepository;
+
+
+    public void initialize(){
+        TaskStatus taskStatus;
+        taskStatus = new TaskStatus(1, "Отправлена на выполнение");
+        taskStatusRepository.save(taskStatus);
+        taskStatus = new TaskStatus(2, "Возвращена для корректировки");
+        taskStatusRepository.save(taskStatus);
+        taskStatus = new TaskStatus(3, "В процессе выполнения");
+        taskStatusRepository.save(taskStatus);
+        taskStatus = new TaskStatus(4, "Отправлено на проверку");
+        taskStatusRepository.save(taskStatus);
+        taskStatus = new TaskStatus(5, "Завершена");
+        taskStatusRepository.save(taskStatus);
+        taskStatus = new TaskStatus(6, "Возвращена на доработку");
+        taskStatusRepository.save(taskStatus);
+        taskStatus = new TaskStatus(7, "Прочее");
+        taskStatusRepository.save(taskStatus);
+        log.info("INITIALIZE STATUSES TASK");
+
+        TaskRole taskRole;
+        taskRole = new TaskRole(1, "Руководитель");
+        taskRoleRepository.save(taskRole);
+        taskRole = new TaskRole(2, "Исполнитель");
+        taskRoleRepository.save(taskRole);
+        taskRole = new TaskRole(3, "Наблюдатель");
+        taskRoleRepository.save(taskRole);
+        log.info("INITIALIZE ROLES TASK");
+
+
+    }
 
     public List<Task> listTasks(String title) {
         if (title != null) return taskRepository.findByTitle(title);
@@ -29,7 +63,7 @@ public class TaskService {
     }
 
 
-    public List<Status> listStatuses() {
+    public List<TaskStatus> listStatuses() {
         return taskStatusRepository.findAll();
     }
 
@@ -59,9 +93,14 @@ public class TaskService {
 //            task.addImageToTask(image1);
         }
 
-        log.info("Saving new Task. Title: {}; Author email: {}", task.getTitle(), task.getLead().getId());
-        Task taskFromDb = taskRepository.save(task);
+        log.info("Saving new Task. Title: {}; ", task.getTitle());
+        taskRepository.save(task);
 
+    }
+    public void saveTaskAndAsses(Task task, TaskAsses asses){
+        long id = taskRepository.save(task);
+        asses.setTaskDb(taskRepository.findTaskDbById(id));
+        taskAssesRepository.save(asses);
     }
 
     public void taskUpdate(Task newTask, Task oldTask) {
@@ -73,14 +112,7 @@ public class TaskService {
             oldTask.addToHistory("Изменение описания с " +oldTask.getDescription()+" на " + newTask.getDescription()+"\n");
             oldTask.setDescription(newTask.getDescription());
         }
-        if (!newTask.getLead().equals(oldTask.getLead())){
-            oldTask.addToHistory("Изменение руководителя с " +oldTask.getLead().getName()+" на " + newTask.getLead().getName()+"\n");
-            oldTask.setLead(newTask.getLead());
-        }
-        if (!newTask.getPerformer().equals(oldTask.getPerformer())){
-            oldTask.addToHistory("Изменение исполнителя с " +oldTask.getLead().getName()+" на " + newTask.getPerformer().getName()+"\n");
-            oldTask.setPerformer(newTask.getPerformer());
-        }
+
         if (!newTask.getStatus().equals(oldTask.getStatus())){
             oldTask.addToHistory("Изменение статуса с " +oldTask.getStatus().getTitle()+" на " + newTask.getStatus().getTitle()+"\n");
             oldTask.setStatus(newTask.getStatus());
@@ -95,7 +127,13 @@ public class TaskService {
     }
 
     public Task getTaskById(Long id) {
-        return taskRepository.findById(id);
-//        return taskRepository.findById(id).orElse(null);
+        return taskRepository.findTaskById(id);
+
     }
+
+
+    public List<TaskRole> listRoles() {
+        return taskRoleRepository.findAll();
+    }
+
 }

@@ -7,16 +7,15 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "task_statuses")
+@Table(name = "task_roles")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Status {
+public class TaskRole {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private long id;
-    @Column(name = "title")
+    private String name;
 
-    private String title;
+
 }

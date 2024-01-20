@@ -1,13 +1,11 @@
 package com.example.buysell.repositories;
 
-import com.example.buysell.models.TaskPackage.Active;
-import com.example.buysell.models.TaskPackage.Status;
+import com.example.buysell.models.TaskPackage.TaskActive;
+import com.example.buysell.models.TaskPackage.TaskStatus;
 import com.example.buysell.models.TaskPackage.Task;
 import com.example.buysell.models.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TaskDbTest {
 
@@ -16,15 +14,14 @@ class TaskDbTest {
         User user = new User();
         User lead = new User();
         User performer = new User();
-        Status status = new Status();
-        Active active = new Active();
+        TaskStatus status = new TaskStatus();
+        TaskActive active = new TaskActive();
 
         Task task = new Task();
         task.setId(4535L);
         task.setTitle("sldfh");
         task.setDescription("sldjfk");
-        task.setLead(lead);
-        task.setPerformer(performer);
+
         task.setStatus(status);
         task.setActive(active);
         task.setHistory("sdlkjfs;dk");

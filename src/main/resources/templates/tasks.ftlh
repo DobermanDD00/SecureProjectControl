@@ -69,6 +69,8 @@
         <input type="hidden" name="_csrf" value="${_csrf.token}">
         <input type="submit" value="Добавить задачу"/>
     </form>
+
+    </form>
 </#if>
 </body>
 </html>
