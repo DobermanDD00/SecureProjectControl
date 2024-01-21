@@ -94,7 +94,7 @@ public class TaskController {
     }
     @PostMapping("/task/update/{idTask}")
     public String taskUpdate(@PathVariable Long idTask, Task task, TaskAccessCreationDto form, Model model, Principal principal) {//TODO Совет Олег @ModelAttribute нужно ли использовать
-        task.setId(idTask);//TODO Совет Олег Костыль почему id сбрасывается на 0, а остальное нет, (дата не сбрасывается, хотя в форму она не попадает)
+        task.setId(idTask);// TODO Это новый объект все что не введено - null
         taskService.updateTaskAndAccesses(task, form.getAccesses(), taskService.getUserByPrincipal(principal));
 
         return "redirect:/";
