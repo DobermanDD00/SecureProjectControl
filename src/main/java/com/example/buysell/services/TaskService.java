@@ -57,54 +57,13 @@ public class TaskService {
 
     }
 
-    public List<Task> listTasks(String title) {
-        if (title != null) return taskRepository.findByTitle(title);
-        return taskRepository.findAll();
-    }
-
-
-    public List<TaskStatus> listStatuses() {
-        return taskStatusRepository.findAll();
-    }
-
-    public User getUserByPrincipal(Principal principal) {
-        if (principal == null) return new User();
-        return userRepository.findByEmail(principal.getName());
-    }
-
-
-    private Image toImageEntity(MultipartFile file) throws IOException {
-        Image image = new Image();
-        image.setName(file.getName());
-        image.setOriginalFileName(file.getOriginalFilename());
-        image.setContentType(file.getContentType());
-        image.setSize(file.getSize());
-        image.setBytes(file.getBytes());
-        return image;
-    }
-
-    public void saveTask(Principal principal, Task task, MultipartFile file1) throws IOException {
-//        task.setLead(getUserByPrincipal(principal));
-        Image image1;
-
-        if (file1.getSize() != 0) {
-            image1 = toImageEntity(file1);
-            image1.setPreviewImage(true);
-//            task.addImageToTask(image1);
-        }
-
-        log.info("Saving new Task. Title: {}; ", task.getTitle());
-        taskRepository.save(task);
-
-    }
-
     public void saveTaskAndAccesses(Task task, List<TaskAccess> accesses) {
         long id = taskRepository.save(task);
         TaskDb taskDb = taskRepository.findTaskDbById(id);
         for (TaskAccess access : accesses) {
             access.setTaskDb(taskDb);
         }
-        saveAccesses(accesses);
+        saveFilteredAccesses(accesses);
     }
 
     public void updateTaskAndAccesses(Task newTask, List<TaskAccess> newAccesses) {
@@ -112,29 +71,12 @@ public class TaskService {
 
         List<TaskAccess> oldAccesses = taskAssesRepository.findByTaskDbId(newTask.getId());
         taskAssesRepository.deleteByTaskDbId(newTask.getId());
-        //TODO сравнение и обновление доступов Спросить Олега как это делать нормально
+        //TODO Совет Олег, сравнение и обновление доступов как это делать нормально,
+        // сейчас удаляются старые и записываются новые (если ничего не менялось, то все перезаписывается на тоже самое)
 
+        newAccesses.forEach(s -> s.setTaskDb(taskRepository.findTaskDbById(newTask.getId())));
+        saveFilteredAccesses(newAccesses);
 
-        newAccesses.forEach((s)->s.setTaskDb(taskRepository.findTaskDbById(newTask.getId())));
-        newAccesses.removeIf(n -> (!n.isCorrect()));
-        saveAccesses(newAccesses);
-
-
-    }
-
-    public void saveAccesses(List<TaskAccess> accesses) {
-        for (TaskAccess access : accesses) {
-            if (access.isEmpty()) continue;
-            taskAssesRepository.save(access);
-        }
-    }
-
-    public List<TaskAccess> getAccessesToTaskById(long taskId) {
-        return taskAssesRepository.findByTaskDbId(taskId);
-    }
-
-    public void deleteAccessesToTaskById(long taskId) {
-        taskAssesRepository.deleteByTaskDbId(taskId);
     }
 
     public void updateTask(Task newTask) {
@@ -155,6 +97,17 @@ public class TaskService {
         taskRepository.save(oldTask);
     }
 
+
+    public void saveFilteredAccesses(List<TaskAccess> accesses) {
+        accesses.removeIf(n -> (!n.isCorrect()));
+        accesses.forEach(n->taskAssesRepository.save(n));
+    }
+
+    public List<TaskAccess> getAccessesToTaskById(long taskId) {
+        return taskAssesRepository.findByTaskDbId(taskId);
+    }
+
+
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
     }
@@ -164,9 +117,60 @@ public class TaskService {
 
     }
 
-
-    public List<TaskUserRole> listRoles() {
-        return taskRoleRepository.findAll();
+    /**
+     * Функция находит задачи по названию или возвращает все задачи
+     */
+    public List<Task> tasksByTitleOrAll(String title) {
+        if (title != null) return taskRepository.findByTitle(title);
+        return taskRepository.findAll();
     }
 
+    /**
+     * Функция получения списка всех возможных статусов для задач
+     */
+    public List<TaskStatus> listStatusesTasks() {
+        return taskStatusRepository.findAll();
+    }
+
+    /**
+     * Функция получения списка всех возможных ролей (должностей) для пользователей в задачах
+     */
+    public List<TaskUserRole> listUserRolesToTask() {
+        return taskRoleRepository.findAll();
+    }
+    //__________________________________________________________________________
+
+    //TODO 11 Переместить в UserService
+    public User getUserByPrincipal(Principal principal) {
+        if (principal == null) return new User();
+        return userRepository.findByEmail(principal.getName());
+    }
+
+    //TODO 22 Проверить, ф-ия для изображения
+    private Image toImageEntity(MultipartFile file) throws IOException {
+        Image image = new Image();
+        image.setName(file.getName());
+        image.setOriginalFileName(file.getOriginalFilename());
+        image.setContentType(file.getContentType());
+        image.setSize(file.getSize());
+        image.setBytes(file.getBytes());
+        return image;
+    }
+
+
+    //TODO 22 Обновить, Principal связано с пользователем, разобраться
+    public void saveTask(Principal principal, Task task, MultipartFile file1) throws IOException {
+//        task.setLead(getUserByPrincipal(principal));
+        Image image1;
+
+        if (file1.getSize() != 0) {
+            image1 = toImageEntity(file1);
+            image1.setPreviewImage(true);
+//            task.addImageToTask(image1);
+        }
+
+        log.info("Saving new Task. Title: {}; ", task.getTitle());
+        taskRepository.save(task);
+
+    }
 }

@@ -42,7 +42,7 @@ public class TaskDb {
     private LocalDateTime dateOfCreated;
 
 
-    public TaskDb(Task task, User user) {// TODO шифрование
+    public TaskDb(Task task, User user) {// TODO 555 шифрование
         this.id = task.getId();
         this.title = task.getTitle().getBytes();
         this.description = task.getDescription().getBytes();
@@ -52,7 +52,7 @@ public class TaskDb {
         this.history = task.getHistory().getBytes();
     }
 
-    public Task toTask(User user) {// TODO дешифрование
+    public Task toTask(User user) {// TODO 555 дешифрование
         Task task = new Task();
         task.setId(this.id);
         task.setTitle(new String(this.title));
