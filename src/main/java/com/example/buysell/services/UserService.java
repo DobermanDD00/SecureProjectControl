@@ -1,6 +1,6 @@
 package com.example.buysell.services;
 
-import com.example.buysell.models.User;
+import com.example.buysell.models.UserPackage.User;
 import com.example.buysell.models.enums.Role;
 import com.example.buysell.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;

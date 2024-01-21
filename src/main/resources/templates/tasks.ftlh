@@ -23,7 +23,14 @@
     Поиск по названию объявления: <input type="text" name="title">
     <input type="submit" value="Поиск"/>
 </form>
-<#list tasks as task>
+<#--<#list tasks as task>-->
+<#--    <div>-->
+<#--        <p><b>${task.title}</b> | <b>${task.description}</b><a href="/task/${task.id}">Подробнее...</a></p>-->
+<#--    </div>-->
+<#--<#else>-->
+<#--    <h3>Задач нет</h3>-->
+<#--</#list>-->
+<#list tasksUser as task>
     <div>
         <p><b>${task.title}</b> | <b>${task.description}</b><a href="/task/${task.id}">Подробнее...</a></p>
     </div>

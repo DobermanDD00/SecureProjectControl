@@ -1,5 +1,6 @@
 package com.example.buysell.repositories;
 
+import com.example.buysell.models.TaskPackage.Task;
 import com.example.buysell.models.TaskPackage.TaskAccess;
 import com.example.buysell.models.TaskPackage.TaskActive;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,8 @@ import java.util.List;
 @Transactional
 public interface TaskAssesRepository extends JpaRepository<TaskAccess, Long> {
     List<TaskAccess> findByTaskDbId(long id);
+    List<TaskAccess> findByTaskDbIdAndUserId(long idTask, long idUser);//TODO ********* Протестить
+    List<TaskAccess> findByUserId(long idUser);
     void deleteByTaskDbId(long id);
 
 

@@ -7,6 +7,7 @@ import com.example.buysell.models.TaskPackage.TaskAccessCreationDto;
 import com.example.buysell.services.TaskService;
 import com.example.buysell.services.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ public class TaskController {
     @GetMapping("/")
     public String tasks(@RequestParam(name = "title", required = false) String title, Principal principal, Model model) {
         model.addAttribute("tasks", taskService.tasksByTitleOrAll(title));
+        model.addAttribute("tasksUser", taskService.tasksToUser(taskService.getUserByPrincipal(principal)));
         model.addAttribute("user", taskService.getUserByPrincipal(principal));
 //        model.addAttribute("users", userService.list());
 //        model.addAttribute("statuses", taskService.listStatusesTasks());
@@ -32,8 +34,8 @@ public class TaskController {
 
 
     @GetMapping("/task/{idTask}")
-    public String taskInfo(@PathVariable Long idTask, Model model) {
-        model.addAttribute("task", taskService.getTaskById(idTask));
+    public String taskInfo(@PathVariable Long idTask, Model model, Principal principal) {
+        model.addAttribute("task", taskService.getTaskById(idTask, taskService.getUserByPrincipal(principal)));
         model.addAttribute("accesses", taskService.getAccessesToTaskById(idTask));
 
 //        model.addAttribute("images", task.getImages());
@@ -64,19 +66,20 @@ public class TaskController {
         model.addAttribute("form", accessesForm);
         return "task-create";
     }
+    @SneakyThrows
     @PostMapping("/task/save")
-    public String create2(@ModelAttribute Task task, @ModelAttribute TaskAccessCreationDto form, Model model) {
-        taskService.saveTaskAndAccesses(task, form.getAccesses());
+    public String create2(@ModelAttribute Task task, @ModelAttribute TaskAccessCreationDto form, Model model, Principal principal) {
+        taskService.createTaskAndAccesses(task, form.getAccesses(), taskService.getUserByPrincipal(principal));
         return "redirect:/";
     }
 
     @GetMapping("/task/edit/{id}")
     public String taskEdit(@PathVariable Long id, Model model, Principal principal) {
-        Task task = taskService.getTaskById(id);
+        Task task = taskService.getTaskById(id, taskService.getUserByPrincipal(principal));
 
         model.addAttribute("user", taskService.getUserByPrincipal(principal));
         model.addAttribute("users", userService.list());
-        model.addAttribute("task", taskService.getTaskById(id));
+        model.addAttribute("task", taskService.getTaskById(id, taskService.getUserByPrincipal(principal)));
         model.addAttribute("rolesTask", taskService.listUserRolesToTask());
         model.addAttribute("statuses", taskService.listStatusesTasks());
 
@@ -90,9 +93,9 @@ public class TaskController {
         return "task-edit";
     }
     @PostMapping("/task/update/{idTask}")
-    public String taskUpdate(@PathVariable Long idTask, Task task, TaskAccessCreationDto form, Model model) {//TODO Совет Олег @ModelAttribute нужно ли использовать
+    public String taskUpdate(@PathVariable Long idTask, Task task, TaskAccessCreationDto form, Model model, Principal principal) {//TODO Совет Олег @ModelAttribute нужно ли использовать
         task.setId(idTask);//TODO Совет Олег Костыль почему id сбрасывается на 0, а остальное нет, (дата не сбрасывается, хотя в форму она не попадает)
-        taskService.updateTaskAndAccesses(task, form.getAccesses());
+        taskService.updateTaskAndAccesses(task, form.getAccesses(), taskService.getUserByPrincipal(principal));
 
         return "redirect:/";
     }

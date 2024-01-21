@@ -1,5 +1,6 @@
-package com.example.buysell.models;
+package com.example.buysell.models.UserPackage;
 
+import com.example.buysell.models.Image;
 import com.example.buysell.models.enums.Role;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,6 +1,6 @@
 package com.example.buysell.models.TaskPackage;
 
-import com.example.buysell.models.User;
+import com.example.buysell.models.UserPackage.User;
 import com.example.buysell.repositories.TaskDb;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,7 +19,7 @@ public class TaskAccess {
     private long id;
     private String str;
 
-    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)//TODO проверить удаление данных записай при удалении исходной задачи
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)//TODO 555 проверить удаление данных записай при удалении исходной задачи
     @JoinColumn(name = "task_id")
     private TaskDb taskDb;
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)

@@ -19,8 +19,8 @@ public class Task {
     private String description;
     private TaskStatus status;
     private TaskActive active;
-    private LocalDateTime dateOfCreated = LocalDateTime.now();
-    private String history = "Задача создана, время создания " + dateOfCreated.toString()+"\n";
+    private LocalDateTime dateOfCreated;
+    private String history;
     //____________________
 //    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY,
 //            mappedBy = "task")
