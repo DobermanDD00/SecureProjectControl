@@ -16,10 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -60,29 +61,36 @@ public class TaskService {
         log.info("INITIALIZE ROLES TASK");
 
 
+//        try {
+//            Files.readAllBytes(Path.of("path"));
+//        } catch (IOException e) {
+//            log.error("Ошибка 1 ");
+//            e.printStackTrace();//TODO Спросить Олега
+//        }
+
+
     }
 
     @SneakyThrows
-    public void createTaskAndAccesses(Task task, List<TaskAccess> accesses, User user) {
-        //TODO Спросить Олега где фильтровать accesses
+    public boolean createTaskAndAccesses(Task task, List<TaskAccess> accesses, User user) {
+        if (task == null || accesses == null || user == null) return false;
+
         initializeTask(task, user);
-        saveTaskAndAccesses(task, accesses, user);
+        return saveTaskAndAccesses(task, accesses, user);
+
     }
 
 
-    public void updateTaskAndAccesses(Task newTask, List<TaskAccess> newAccesses, User user) {
-        newTask = updateTask(newTask, newAccesses, user);
+        public void updateTaskAndAccesses(Task newTask, List<TaskAccess> newAccesses, User user, Object privKey) {
+        newTask = updateTask(newTask, newAccesses, user, privKey);
 
         taskAssesRepository.deleteByTaskDbId(newTask.getId());
-        //TODO Совет Олег, сравнение и обновление доступов как это делать нормально,
-        // сейчас удаляются старые и записываются новые (если ничего не менялось, то все перезаписывается на тоже самое)
-
         saveTaskAndAccesses(newTask, newAccesses, user);
 
     }
 
-    private Task updateTask(Task newTask, List<TaskAccess> accesses, User user) {
-        SecretKey taskKey = getSecretKeyToTask(newTask.getId(), user);
+    private Task updateTask(Task newTask, List<TaskAccess> accesses, User user, Object privKey) {
+        SecretKey taskKey = getSecretKeyToTask(newTask.getId(), user, privKey);
         Task oldTask = taskRepository.getTaskById(newTask.getId(), taskKey);
         if (!newTask.getTitle().equals(oldTask.getTitle())) {
             oldTask.addToHistory("Изменение названия с " + oldTask.getTitle() + " на " + newTask.getTitle() + "\n");
@@ -94,29 +102,27 @@ public class TaskService {
         }
 
         if (!newTask.getStatus().equals(oldTask.getStatus())) {
-            oldTask.addToHistory("Изменение статуса с " + oldTask.getStatus().getTitle() + " на " + newTask.getStatus().getTitle() + "\n");
+            oldTask.addToHistory("Изменение статуса на " + newTask.getStatus().getTitle() + "\n");
             oldTask.setStatus(newTask.getStatus());
         }
-        //TODO Спросить Олега как лучше добавлять в историю изменения доступов
 
         return oldTask;
     }
 
 
     @SneakyThrows
-    private void saveTaskAndAccesses(Task task, List<TaskAccess> accesses, User user) {
-        //TODO Спросить Олега где фильтровать accesses
+    private boolean saveTaskAndAccesses(Task task, List<TaskAccess> accesses, User user) {
         SecretKey taskKey = Security.generatedAesKey();
         long id = taskRepository.save(task, taskKey);
         TaskDb taskDb = taskRepository.findTaskDbById(id);
 
         accesses.forEach(n -> {
-            //TODO 333 Когда у пользователей появиться pub and pri key:
-            // Сохранять зашифрованный ключ задачи, сейчас в отк виде, публ ключ брать из ДБ
+            //TODO 000 Взять из дб список пользователей, по accesses и проставить в accesses зашифрованные ключи задач
             n.setTaskKey(Security.encodedAnyKey(taskKey));
             n.setTaskDb(taskDb);
         });
         saveFilteredAccesses(accesses);
+        return false;//************
     }
 
     private Task initializeTask(Task task, User user) {
@@ -127,10 +133,10 @@ public class TaskService {
         return task;
     }
 
-    private SecretKey getSecretKeyToTask(long idTask, User user) {
+    private SecretKey getSecretKeyToTask(long idTask, User user, Object privKey) {
         List<TaskAccess> taskAccesses = taskAssesRepository.findByTaskDbIdAndUserId(idTask, user.getId());
         if (taskAccesses == null) return null;
-        //TODO 999 На будущее беру из списка только 1 значение
+        //TODO ************8999 На будущее беру из списка только 1 значение
         // Переделать и из доступа дешифровать ключ задачи
         return Security.decodedKeyAes(taskAccesses.get(0).getTaskKey());
 
@@ -152,24 +158,16 @@ public class TaskService {
     }
 
     @SneakyThrows
-    public Task getTask(TaskDb taskDb, User user) {
-        return taskDb.toTask(getSecretKeyToTask(taskDb.getId(), user));
+    public Task getTask(TaskDb taskDb, User user, Object privKey) {
+        return taskDb.toTask(getSecretKeyToTask(taskDb.getId(), user, privKey));
     }
 
-    public List<Task> getTasks(List<TaskDb> tasksDb, User user) {
-        List<Task> tasks = new ArrayList<>();
-        tasksDb.forEach(n -> {
-            tasks.add(getTask(n, user));
-        });
-        return tasks;
-    }
 
     @SneakyThrows
-    public Task getTaskById(long idTask, User user) {
-        //TODO Спросить Олега про поиск по примеру
+    public Task getTaskById(long idTask, User user, Object privKey) {
         List<TaskAccess> taskAccesses = taskAssesRepository.findByTaskDbIdAndUserId(idTask, user.getId());
 
-        Task task = taskRepository.getTaskById(idTask, getSecretKeyToTask(idTask, user));
+        Task task = taskRepository.getTaskById(idTask, getSecretKeyToTask(idTask, user, privKey));
 
         return task;
     }
@@ -184,16 +182,19 @@ public class TaskService {
 //        return taskRepository.findAll();
     }
 
-    public List<Task> tasksToUser(User user) {
+    public List<Task> tasksToUser(User user, Object privKey) {
         if (user == null) return null;
-        if(user.getId() == null) return null;//TODO Почему?
+        if(user.getId() == null) return null;
 
         List<TaskAccess> taskAccesses = taskAssesRepository.findByUserId(user.getId());
-        List<Task> tasks = new ArrayList<>();
-        taskAccesses.forEach(n -> tasks.add(getTask(n.getTaskDb(), user)));
+        Set<Task> tasksSet = new HashSet<>();
+        taskAccesses.forEach(n -> {
+            TaskDb taskDb = n.getTaskDb();
+            tasksSet.add(taskDb.toTask(getSecretKeyToTask(taskDb.getId(), user, privKey)));
+        });
 
 
-        return tasks;
+        return new ArrayList<>(tasksSet);
     }
 
     /**

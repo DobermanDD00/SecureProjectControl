@@ -1,13 +1,17 @@
 package com.example.buysell.services;
 
+import com.example.buysell.models.Security.Security;
 import com.example.buysell.models.UserPackage.User;
 import com.example.buysell.models.enums.Role;
 import com.example.buysell.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -21,14 +25,16 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public boolean createUser(User user) {
+    @SneakyThrows
+    public boolean createUser(User user, KeyPair keyPair) {
         String email = user.getEmail();
         if (userRepository.findByEmail(email) != null) return false;
         user.setActive(true);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.getRoles().add(Role.ROLE_USER);
-        log.info("Saving new User with email: {}", email);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPubKey(keyPair.getPublic().getEncoded());
         userRepository.save(user);
+        log.info("Saving new User with email: {}", email);
         return true;
     }
 
@@ -62,20 +68,22 @@ public class UserService {
         }
         userRepository.save(user);
     }
+    @SneakyThrows
     public void initialize(){
-        User user;
-        user = new User();
-        user.setName("Михаил");
-        user.setEmail("Mih@gmail.com");
-        user.setPhoneNumber("1");
-        user.setPassword("Mih@gmail.com");
-        createUser(user);
-        user = new User();
-        user.setName("Николай");
-        user.setEmail("Nik@gmail.com");
-        user.setPhoneNumber("2");
-        user.setPassword("Nik@gmail.com");
-        createUser(user);
+        KeyPair keyPair = Security.generatedRsaKeys();
+        User user1 = new User();
+        user1.setName("Михаил");
+        user1.setEmail("Mih@gmail.com");
+        user1.setPhoneNumber("1");
+        user1.setPassword("Mih@gmail.com");
+        createUser(user1, keyPair);
+
+        User user2 = new User();
+        user2.setName("Николай");
+        user2.setEmail("Nik@gmail.com");
+        user2.setPhoneNumber("2");
+        user2.setPassword("Nik@gmail.com");
+        createUser(user2, keyPair);
         log.info("INITIALIZE USERS");
     }
 }
