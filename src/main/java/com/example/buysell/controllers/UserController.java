@@ -1,19 +1,25 @@
 package com.example.buysell.controllers;
 
+import com.example.buysell.models.Security.Keys;
 import com.example.buysell.models.Security.Security;
 import com.example.buysell.models.UserPackage.User;
+import com.example.buysell.repositories.FileFunctions;
 import com.example.buysell.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpSession;
-import java.security.KeyPair;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class UserController {
@@ -52,17 +58,46 @@ public class UserController {
 //        model.addAttribute("products", user.getProducts());
         return "user-info";
     }
-    @GetMapping("/checkPriKey")
-    public String checkPriKey(HttpSession httpSession){
-        Object privkey = httpSession.getAttribute("privkey");
 
 
+    @PostMapping("/key")
+    public String postKey(@RequestParam("privkey") String privkey, Principal principal, Model model, HttpSession httpSession) {
+        User currentUser = userService.getUserByPrincipal(principal);
+        PrivateKey inputPrivateKey;
 
-        return  null;
+        try {
+            inputPrivateKey = Security.decodedKeyPrivateRsa(privkey.getBytes());
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            log.warn("Введенное значение не является приватным ключом\n");
+            inputPrivateKey = null;
+        }
+        try {
+            inputPrivateKey = Security.decodedKeyPrivateRsa(FileFunctions.readFile(currentUser.getName()+".txt"));
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            log.warn("Введенное значение из файла не является приватным ключом\n");
+            inputPrivateKey = null;
+        }
+
+        PublicKey curUsrPubKey = currentUser.getPubKey();
+        PublicKey inputPrivPubKey = Security.getPublicKeyByPrivateKey(inputPrivateKey);
+
+        if (inputPrivateKey == null || !(curUsrPubKey.equals(inputPrivPubKey))) {
+            model.addAttribute("user", currentUser);
+            model.addAttribute("message", new String("Некорректный приватный ключ"));
+            return "inputPrivateKey";
+        }
+        Keys keysCurrentUser = new Keys(inputPrivateKey, Security.getPublicKeyByPrivateKey(inputPrivateKey));
+        httpSession.setAttribute("keysCurrentUser", keysCurrentUser);
+
+        return "redirect:/";
     }
 
+    @GetMapping("/checkPriKey")
+    public String checkPriKey(HttpSession httpSession) {
+        Object privkey = httpSession.getAttribute("privkey");
 
-
+        return null;
+    }
 
 
 }

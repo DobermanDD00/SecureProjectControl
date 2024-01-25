@@ -2,11 +2,9 @@ package com.example.buysell.services;
 
 import com.example.buysell.models.Image;
 import com.example.buysell.models.Security.Security;
-import com.example.buysell.models.TaskPackage.Task;
-import com.example.buysell.models.TaskPackage.TaskAccess;
-import com.example.buysell.models.TaskPackage.TaskStatus;
-import com.example.buysell.models.TaskPackage.TaskUserRole;
+import com.example.buysell.models.TaskPackage.*;
 import com.example.buysell.models.UserPackage.User;
+import com.example.buysell.models.inputException;
 import com.example.buysell.repositories.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,18 +12,29 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TaskService {
+    public static final int STANDARD_MODE = 0;
+    public static final int NEW_NODE_MODE = 1;
+
     private final UserRepository userRepository;
     private final TaskRepositoryCustom taskRepository;
     private final TaskStatusRepository taskStatusRepository;
@@ -71,17 +80,99 @@ public class TaskService {
 
     }
 
-    @SneakyThrows
-    public boolean createTaskAndAccesses(Task task, List<TaskAccess> accesses, User user) {
-        if (task == null || accesses == null || user == null) return false;
+    public void saveTaskCreationDto(TaskCreationDto taskCreationDto, User user) throws inputException {
+        if (!taskCreationDto.isCorrectInput()){
+            throw new inputException(taskCreationDto.getInfo());
+        }
+        long idTask = taskRepository.getNextId();
+        final SecretKey taskKey;
+        try {
+            taskKey = Security.generatedAesKey();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
 
-        initializeTask(task, user);
-        return saveTaskAndAccesses(task, accesses, user);
+        Task task = taskCreationDto.getTask();
+        task.setId(idTask);
+        task.setDateOfCreated(LocalDateTime.now());
+        task.setHistory("Задача создана пользователем: " + user.getName() + "\n");
+        task.addToHistory("Время создания " + task.getDateOfCreated().toString() + "\n");
+
+        TaskDb taskDb = taskRepository.save(task, taskKey);
+
+
+
+
+        taskCreationDto.getAccesses().forEach(n->{
+            n.setTaskDb(taskDb);
+            try {
+                n.setTaskKey(Security.cipherRSAEncrypt(Security.encodedAnyKey(taskKey), user.getPubKey()));
+            } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException |
+                     IllegalBlockSizeException | BadPaddingException e) {
+                throw new RuntimeException("Ошибка в шифровании ключа задачи");
+            }
+            taskAssesRepository.save(n);
+        });
+
+
+
+
 
     }
 
 
-        public void updateTaskAndAccesses(Task newTask, List<TaskAccess> newAccesses, User user, Object privKey) {
+
+
+
+
+
+
+    /**
+     * Метод для проверки задачи и соответствующих списков доступа, в случае ошибок порождает исключение с сообщением, где именно ошибки
+     *
+     * @param task           проверяемая задача
+     * @param taskAccessList проверяемый список доступов
+     * @param mode           STANDARD_MODE = 0 - стандартная полная проверка (id !=0 и в списке доступа проставлены ссылки на задачи),
+     *                       NEW_NODE_MODE = 1 - проверка для новой задачи (id мб == 0 и в списке доступа мб на проставлены ссылки на задачи)
+     */
+    public String checkTaskAndAccesses(Task task, List<TaskAccess> taskAccessList, int mode) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (task == null)
+            stringBuilder.append("Ошибка, task = null\n");
+        if (taskAccessList == null)
+            try {
+                task.checkTask(mode);
+            } catch (inputException e) {
+                stringBuilder.append(e.getMessage());
+            }
+        taskAccessList.forEach(n -> {
+            try {
+                n.checkAccess(mode);
+            } catch (inputException e) {
+                stringBuilder.append(e.getMessage());
+            }
+        });
+
+        return stringBuilder.toString();
+
+    }
+
+
+    public void createTaskAndAccesses(Task task, List<TaskAccess> accesses, User user) throws inputException {
+        if (task == null)
+            throw new inputException("Ошибка, task == null");
+        if (accesses == null)
+            throw new inputException("Ошибка, access == null");
+        if (user == null)
+            throw new inputException("Ошибка, user == null");
+
+//        initializeTask(task, user);
+        saveTaskAndAccesses(task, accesses, user);
+
+    }
+
+
+    public void updateTaskAndAccesses(Task newTask, List<TaskAccess> newAccesses, User user, PrivateKey privKey) {
         newTask = updateTask(newTask, newAccesses, user, privKey);
 
         taskAssesRepository.deleteByTaskDbId(newTask.getId());
@@ -89,7 +180,7 @@ public class TaskService {
 
     }
 
-    private Task updateTask(Task newTask, List<TaskAccess> accesses, User user, Object privKey) {
+    private Task updateTask(Task newTask, List<TaskAccess> accesses, User user, PrivateKey privKey) {
         SecretKey taskKey = getSecretKeyToTask(newTask.getId(), user, privKey);
         Task oldTask = taskRepository.getTaskById(newTask.getId(), taskKey);
         if (!newTask.getTitle().equals(oldTask.getTitle())) {
@@ -110,41 +201,48 @@ public class TaskService {
     }
 
 
-    @SneakyThrows
-    private boolean saveTaskAndAccesses(Task task, List<TaskAccess> accesses, User user) {
-        SecretKey taskKey = Security.generatedAesKey();
-        long id = taskRepository.save(task, taskKey);
-        TaskDb taskDb = taskRepository.findTaskDbById(id);
+    private void saveTaskAndAccesses(Task task, List<TaskAccess> accesses, User user) {
+        SecretKey taskKey;
+        try {
+            taskKey = Security.generatedAesKey();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Ошибка в генерации ключа задачи");
+        }
+
+        long idTask = taskRepository.getNextId();
+        task.setId(idTask);
+        TaskDb taskDb = taskRepository.save(task, taskKey);
 
         accesses.forEach(n -> {
-            //TODO 000 Взять из дб список пользователей, по accesses и проставить в accesses зашифрованные ключи задач
-            n.setTaskKey(Security.encodedAnyKey(taskKey));
+            try {
+                n.setTaskKey(Security.cipherRSAEncrypt(taskKey.getEncoded(), user.getPubKey()));
+            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
+                     IllegalBlockSizeException | BadPaddingException e) {
+                throw new RuntimeException("Ошибка при декодировании публичного ключа пользователя или шифровании ключа задачи");
+            }
             n.setTaskDb(taskDb);
         });
-        saveFilteredAccesses(accesses);
-        return false;//************
+        saveAccesses(accesses);
     }
 
-    private Task initializeTask(Task task, User user) {
-        task.setDateOfCreated(LocalDateTime.now());
-        task.setHistory("Задача создана пользователем: " + user.getName() + "\n");
-        task.addToHistory("Время создания " + task.getDateOfCreated().toString() + "\n");
 
-        return task;
-    }
 
-    private SecretKey getSecretKeyToTask(long idTask, User user, Object privKey) {
+    private SecretKey getSecretKeyToTask(long idTask, User user, PrivateKey privKey) {
         List<TaskAccess> taskAccesses = taskAssesRepository.findByTaskDbIdAndUserId(idTask, user.getId());
         if (taskAccesses == null) return null;
         //TODO ************8999 На будущее беру из списка только 1 значение
         // Переделать и из доступа дешифровать ключ задачи
-        return Security.decodedKeyAes(taskAccesses.get(0).getTaskKey());
+        try {
+            return Security.decodedKeyAes(Security.cipherRSADecrypt(taskAccesses.get(0).getTaskKey(), privKey));
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException |
+                 BadPaddingException e) {
+            throw new RuntimeException("Ошибка при дешифровании ключа задачи");
+        }
 
     }
 
 
-    public void saveFilteredAccesses(List<TaskAccess> accesses) {
-        accesses.removeIf(n -> (!n.isCorrect()));
+    private void saveAccesses(List<TaskAccess> accesses) {
         taskAssesRepository.saveAll(accesses);
     }
 
@@ -158,13 +256,13 @@ public class TaskService {
     }
 
     @SneakyThrows
-    public Task getTask(TaskDb taskDb, User user, Object privKey) {
+    public Task getTask(TaskDb taskDb, User user, PrivateKey privKey) {
         return taskDb.toTask(getSecretKeyToTask(taskDb.getId(), user, privKey));
     }
 
 
     @SneakyThrows
-    public Task getTaskById(long idTask, User user, Object privKey) {
+    public Task getTaskById(long idTask, User user, PrivateKey privKey) {
         List<TaskAccess> taskAccesses = taskAssesRepository.findByTaskDbIdAndUserId(idTask, user.getId());
 
         Task task = taskRepository.getTaskById(idTask, getSecretKeyToTask(idTask, user, privKey));
@@ -182,9 +280,9 @@ public class TaskService {
 //        return taskRepository.findAll();
     }
 
-    public List<Task> tasksToUser(User user, Object privKey) {
+    public List<Task> tasksToUser(User user, PrivateKey privKey) {
         if (user == null) return null;
-        if(user.getId() == null) return null;
+        if (user.getId() == 0) return null;
 
         List<TaskAccess> taskAccesses = taskAssesRepository.findByUserId(user.getId());
         Set<Task> tasksSet = new HashSet<>();

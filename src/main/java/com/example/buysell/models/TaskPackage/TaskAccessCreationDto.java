@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaskAccessCreationDto {
+
     private List<TaskAccess> Accesses = new ArrayList<>();
 
     public void addAccess(TaskAccess taskAccess){

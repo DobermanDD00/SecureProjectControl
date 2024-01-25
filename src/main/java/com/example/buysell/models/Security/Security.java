@@ -5,10 +5,12 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
+import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
@@ -27,6 +29,24 @@ public class Security {
         javax.crypto.Cipher encrypt = javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding");
         encrypt.init(mode, key, iv);
         return encrypt.doFinal(data);
+
+    }
+
+    public static PublicKey getPublicKeyByPrivateKey(PrivateKey privateKey) {
+
+        try {
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            byte[] encodedPv = privateKey.getEncoded();
+            PKCS8EncodedKeySpec keySpecPv = new PKCS8EncodedKeySpec(encodedPv);
+            RSAPrivateCrtKey rsaPrivateKey = (RSAPrivateCrtKey) kf.generatePrivate(keySpecPv);
+
+
+            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(rsaPrivateKey.getModulus(), rsaPrivateKey.getPublicExponent());
+
+            return kf.generatePublic(publicKeySpec);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -97,26 +117,13 @@ public class Security {
     }
 
 
-    public static boolean isCorrectPairKeys(byte[] bytesKeyPublic, byte[] bytesKeyPrivate) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        if (bytesKeyPublic == null || bytesKeyPrivate == null)
-            return false;
-        RSAPublicKey keyPub = decodedKeyPublicRsa(bytesKeyPublic);
-        RSAPrivateKey keyPri = decodedKeyPrivateRsa(bytesKeyPrivate);
-        return isCorrectPairKeys(keyPub, keyPri);
+    public static boolean isCorrectPairKeys(byte[] bytesKeyPublic, byte[] bytesKeyPrivate) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        return isCorrectPairKeys(Security.decodedKeyPublicRsa(bytesKeyPublic), Security.decodedKeyPrivateRsa(bytesKeyPrivate));
 
     }
 
-    public static boolean isCorrectPairKeys(PublicKey publicKey, PrivateKey privateKey) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        byte[] plainText = new byte[0];
-
-        plainText = generateRandomBytes(100);
-
-        byte[] encryptedText = cipherRSAEncrypt(plainText, publicKey);
-        byte[] decryptedText = cipherRSADecrypt(encryptedText, privateKey);
-
-        return Arrays.equals(plainText, decryptedText);
-
-
+    public static boolean isCorrectPairKeys(PublicKey publicKey, PrivateKey privateKey) {
+        return (getPublicKeyByPrivateKey(privateKey).equals(publicKey));
     }
 
 

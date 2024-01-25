@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.persistence.*;
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -19,7 +20,7 @@ import java.util.*;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
     @Column(name = "email", unique = true)
     private String email;
     @Column(name = "phone_number")
@@ -32,8 +33,8 @@ public class User implements UserDetails {
     @Column(name = "password", length = 1000)
     private String password;
 
-    @Lob
-    private byte[] pubKey;
+    @Column(name = "pubKey", length = 1000)
+    private PublicKey pubKey;
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role",
     joinColumns = @JoinColumn(name = "user_id"))
