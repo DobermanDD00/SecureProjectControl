@@ -19,7 +19,6 @@
         <#list users as user>
             <option value="${user.id}"> ${user.name}</option>
         </#list>
-<#--        TODO Исправить в будущем, убрать повторения в селекте, возникающие при задании значения по умолчанию -->
     </select>
     Исполнитель:
     <select class="task.performer" name = "performer" id = "task.performer.id">

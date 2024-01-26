@@ -8,7 +8,6 @@ import com.example.buysell.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,30 +25,37 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Получить залогиненного пользователя
+     */
     public User getUserByPrincipal(Principal principal) {
         if (principal == null) return new User();
         return userRepository.findByEmail(principal.getName());
     }
-    public User getUserById(long idUser){
 
+    public User findById(long idUser) {
         return userRepository.findById(idUser);
     }
 
 
-    @SneakyThrows
+    /**
+     * Создать нового пользователя
+     *
+     * @return true если создали, false если нет
+     */
     public boolean createUser(User user, KeyPair keyPair) {
-        String email = user.getEmail();
-        if (userRepository.findByEmail(email) != null) return false;
+        if (user == null || keyPair == null) return false;
+        if (userRepository.findByEmail(user.getEmail()) != null) return false;
         user.setActive(true);
         user.getRoles().add(Role.ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setPubKey(keyPair.getPublic());
         userRepository.save(user);
-        log.info("Saving new User with email: {}", email);
+        log.info("Saving new User with email: {}", user.getEmail());
         return true;
     }
 
-    public List<User> list() {
+    public List<User> listAllUsers() {
         return userRepository.findAll();
     }
 
@@ -79,16 +85,19 @@ public class UserService {
         }
         userRepository.save(user);
     }
+
     @SneakyThrows
-    public void initialize(){
+    public void initialize() {
+        if (userRepository.count() != 0) return;
+
         KeyPair keyPair = Security.generatedRsaKeys();
         User user = new User();
         user.setName("Михаил");
         user.setEmail("Mih@gmail.com");
         user.setPhoneNumber("1");
         user.setPassword("Mih@gmail.com");
-        createUser(user, keyPair);
-        FileFunctions.writeFile(keyPair.getPrivate().getEncoded(), user.getName()+".txt");
+        if (createUser(user, keyPair))
+            FileFunctions.writeFile(keyPair.getPrivate().getEncoded(), user.getName() + ".txt");
 
 
         keyPair = Security.generatedRsaKeys();
@@ -97,19 +106,10 @@ public class UserService {
         user.setEmail("Nik@gmail.com");
         user.setPhoneNumber("2");
         user.setPassword("Nik@gmail.com");
-        createUser(user, keyPair);
+        if (createUser(user, keyPair))
+            FileFunctions.writeFile(keyPair.getPrivate().getEncoded(), user.getName() + ".txt");
+
         log.info("INITIALIZE USERS");
-        FileFunctions.writeFile(keyPair.getPrivate().getEncoded(), user.getName()+".txt");
-
-
-//        PrivateKey privateKey = Security.decodedKeyPrivateRsa(FileFunctions.readFile(user.getName()+".txt"));
-//        PublicKey publicKey1 = keyPair.getPublic();
-//        PublicKey publicKey2 = Security.getPublicKeyByPrivateKey(privateKey);
-//        System.out.println("\n\n\n\n\n\n\n");
-//        System.out.println(publicKey1.equals(publicKey2));
-//        System.out.println("\n\n\n\n\n\n\n");
-
-
 
 
     }

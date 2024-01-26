@@ -13,8 +13,10 @@ import java.util.List;
 public interface TaskAssesRepository extends JpaRepository<TaskAccess, Long> {
     List<TaskAccess> findByTaskDbId(long id);
     List<TaskAccess> findByTaskDbIdAndUserId(long idTask, long idUser);
+    TaskAccess findFirstByTaskDbIdAndUserId(long idTask, long idUser);
     List<TaskAccess> findByUserId(long idUser);
-    void deleteByTaskDbId(long id);
+
+    void deleteAllByTaskDbId(long id);
 
 
 }

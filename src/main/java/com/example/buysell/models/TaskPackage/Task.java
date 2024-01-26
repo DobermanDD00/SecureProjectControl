@@ -1,6 +1,6 @@
 package com.example.buysell.models.TaskPackage;
 
-import com.example.buysell.models.inputException;
+import com.example.buysell.models.Exception.InputException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -52,7 +52,7 @@ public class Task {
      * @param mode STANDARD_MODE = 0 - стандартная полная проверка (id !=0),
      *             NEW_TASK_MODE = 1 - проверка для новой задачи (id мб == 0)
      */
-    public void checkTask(int mode) throws inputException {
+    public void checkTask(int mode) throws InputException {
         StringBuilder errorReport = new StringBuilder();
 
         if (mode == STANDARD_MODE && id == 0)
@@ -79,7 +79,7 @@ public class Task {
 
         if (errorReport.length() > 0) {
 //            throw new imputException("Ошибка в задаче с id = "+id+" Название "+title+"\n"+errorReport.toString());
-            throw new inputException(errorReport.toString());
+            throw new InputException(errorReport.toString());
         }
     }
 

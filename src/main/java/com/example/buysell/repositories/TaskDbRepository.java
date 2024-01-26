@@ -8,7 +8,6 @@ import java.util.Optional;
 
 public interface TaskDbRepository extends JpaRepository<TaskDb, Long> {
     List<TaskDb> findByTitle(String title);
-
     TaskDb findTopByOrderByIdDesc();
 
 

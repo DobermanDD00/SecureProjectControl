@@ -21,6 +21,10 @@ public class TaskRepositoryCustom {
         return null;//***************************
     }
 
+    public boolean existsById(long id){
+        return taskRepositoryDb.existsById(id);
+    }
+
 
 
     public TaskDb save(Task task, SecretKey taskKey) {
@@ -39,12 +43,13 @@ public class TaskRepositoryCustom {
         taskRepositoryDb.deleteById(id);
     }
 
-    @SneakyThrows
+
     public Task getTaskById(long id, SecretKey taskKey) {
         TaskDb taskDb = taskRepositoryDb.findById(id).orElse(null);
         if (taskDb == null) return null;
 
         return taskDb.toTask(taskKey);
+
     }
 
     public TaskDb findTaskDbById(Long id) {

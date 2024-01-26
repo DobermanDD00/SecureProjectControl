@@ -1,16 +1,13 @@
 package com.example.buysell.controllers;
 
+import com.example.buysell.models.Exception.InputException;
 import com.example.buysell.models.Security.Keys;
-import com.example.buysell.models.TaskPackage.Task;
 import com.example.buysell.models.TaskPackage.TaskAccess;
-import com.example.buysell.models.TaskPackage.TaskAccessCreationDto;
-
-import com.example.buysell.models.TaskPackage.TaskCreationDto;
+import com.example.buysell.models.TaskPackage.TaskDto;
 import com.example.buysell.models.UserPackage.User;
 import com.example.buysell.services.TaskService;
 import com.example.buysell.services.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,8 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.security.Principal;
-import java.security.PrivateKey;
-import java.util.Arrays;
 
 @Slf4j
 @Controller
@@ -31,7 +26,7 @@ public class TaskController {
 
     @GetMapping("/")
     public String tasks(@RequestParam(name = "title", required = false) String title, Principal principal, Model model, HttpSession httpSession) {
-        User userCurrent = taskService.getUserByPrincipal(principal);
+        User userCurrent = userService.getUserByPrincipal(principal);
         model.addAttribute("user", userCurrent);
         Object keys = httpSession.getAttribute("keysCurrentUser");
         if (keys == null) {
@@ -39,14 +34,8 @@ public class TaskController {
             return "inputPrivateKey";
         }
         Keys keysCurrentUser = (Keys) keys;
-//        log.info("Public\n{}\n Private\n{}", new String(keysCurrentUser.getPublicKey().getEncoded()), new String(keysCurrentUser.getPrivateKey().getEncoded()));
 
-
-        model.addAttribute("tasksUser", taskService.tasksToUser(userCurrent, keysCurrentUser.getPrivateKey()));
-//        model.addAttribute("tasks", taskService.tasksByTitleOrAll(title));
-
-//        model.addAttribute("users", userService.list());
-//        model.addAttribute("statuses", taskService.listStatusesTasks());
+        model.addAttribute("listTasksToUser", taskService.listTasksToUser(userCurrent, keysCurrentUser.getPrivateKey()));
 
         return "tasks";
     }
@@ -63,56 +52,50 @@ public class TaskController {
             return "inputPrivateKey";
         }
         Keys keysCurrentUser = (Keys) keys;
+        User currentUser = userService.getUserByPrincipal(principal);
 
+        TaskDto taskDto = taskService.getTaskDTOById(idTask, currentUser, keysCurrentUser.getPrivateKey());
+        model.addAttribute("taskDto", taskDto);
 
-
-        model.addAttribute("task", taskService.getTaskById(idTask, taskService.getUserByPrincipal(principal), keysCurrentUser.getPrivateKey()));
-        model.addAttribute("accesses", taskService.getAccessesToTaskById(idTask));
-
-//        model.addAttribute("images", task.getImages());
         return "task-info";
     }
 
 
-//    @PostMapping("/task/create")
-//    public String createTask(@RequestParam("file1") MultipartFile file1, @ModelAttribute ("task") Task task, Principal principal) throws IOException {
-//        taskService.saveTask(principal, task, file1);
-//        return "redirect:/";
-//    }
-
 
     @GetMapping("/task/create")
     public String newTasks1(Model model) {
-        model.addAttribute("listUsersToTask", userService.list());
-        model.addAttribute("listUserRolesToTask", taskService.listUserRolesToTask());
-        model.addAttribute("listStatusesTasks", taskService.listStatusesTasks());
+        model.addAttribute("listUsersToTask", userService.listAllUsers());
+        model.addAttribute("listUserRolesToTask", taskService.listAllUserRolesToTask());
+        model.addAttribute("listStatusesTasks", taskService.listAllStatusesTasks());
 
-        TaskCreationDto taskCreationDto = new TaskCreationDto();
+        TaskDto taskDto = new TaskDto();
         for (int i = 0; i < 5; i++)
-            taskCreationDto.addAccess(new TaskAccess());
+            taskDto.addAccess(new TaskAccess());
 
-        model.addAttribute("taskCreationDto", taskCreationDto);
+        model.addAttribute("taskDto", taskDto);
 
         return "task-create";
     }
 
-    @SneakyThrows
     @PostMapping("/task/save")
-    public String create2(@ModelAttribute TaskCreationDto taskCreationDto, Principal principal, Model model) {
+    public String create2(@ModelAttribute TaskDto taskDto, Principal principal, Model model) {
 
-        if (!taskCreationDto.isCorrectInput()) {
-            model.addAttribute("listUsersToTask", userService.list());
-            model.addAttribute("listUserRolesToTask", taskService.listUserRolesToTask());
-            model.addAttribute("listStatusesTasks", taskService.listStatusesTasks());
+        if (!taskDto.isCorrectInput()) {
+            model.addAttribute("listUsersToTask", userService.listAllUsers());
+            model.addAttribute("listUserRolesToTask", taskService.listAllUserRolesToTask());
+            model.addAttribute("listStatusesTasks", taskService.listAllStatusesTasks());
 
             for (int i = 0; i < 5; i++)
-                taskCreationDto.addAccess(new TaskAccess());
+                taskDto.addAccess(new TaskAccess());
             return "task-create";
         }
 
-        User currentUser = taskService.getUserByPrincipal(principal);
-//        System.out.println(new String(currentUser.getPubKey()));
-        taskService.saveTaskCreationDto(taskCreationDto, currentUser);
+        User currentUser = userService.getUserByPrincipal(principal);
+        try {
+            taskService.createTaskDto(taskDto, currentUser);
+        } catch (InputException e) {
+            throw new RuntimeException(e);
+        }
         return "redirect:/";
 
     }
@@ -124,36 +107,39 @@ public class TaskController {
             model.addAttribute("message", "");
             return "inputPrivateKey";
         }
+
+        User currentUser = userService.getUserByPrincipal(principal);
         Keys keysCurrentUser = (Keys) keys;
-        Task task = taskService.getTaskById(id, taskService.getUserByPrincipal(principal), keysCurrentUser.getPrivateKey());
 
-        model.addAttribute("user", taskService.getUserByPrincipal(principal));
-        model.addAttribute("users", userService.list());
-        model.addAttribute("task", taskService.getTaskById(id, taskService.getUserByPrincipal(principal), keysCurrentUser.getPrivateKey()));
-        model.addAttribute("rolesTask", taskService.listUserRolesToTask());
-        model.addAttribute("statuses", taskService.listStatusesTasks());
+        TaskDto taskDto = taskService.getTaskDTOById(id, currentUser, keysCurrentUser.getPrivateKey());
+        taskDto.getAccesses().add(new TaskAccess());
+        taskDto.getAccesses().add(new TaskAccess());
+        taskDto.getAccesses().add(new TaskAccess());
 
-        TaskAccessCreationDto accessesForm = new TaskAccessCreationDto();
-        accessesForm.setAccesses(taskService.getAccessesToTaskById(id));
-        accessesForm.getAccesses().add(new TaskAccess());
-        accessesForm.getAccesses().add(new TaskAccess());
-        accessesForm.getAccesses().add(new TaskAccess());
-        model.addAttribute("accesses", accessesForm.getAccesses());
-        model.addAttribute("form", accessesForm);
+        model.addAttribute("taskDto", taskDto);
+        model.addAttribute("listAllUsers", userService.listAllUsers());
+        model.addAttribute("listAllUserRolesToTask", taskService.listAllUserRolesToTask());
+        model.addAttribute("listAllStatusesTask", taskService.listAllStatusesTasks());
+
         return "task-edit";
     }
 
     @PostMapping("/task/update/{idTask}")
-    public String taskUpdate(@PathVariable Long idTask, Task task, TaskAccessCreationDto form, Model model, Principal principal, HttpSession httpSession) {
+    public String taskUpdate(@PathVariable Long idTask, TaskDto taskDto, Model model, Principal principal, HttpSession httpSession) {
         Object keys = httpSession.getAttribute("keysCurrentUser");
         if (keys == null) {
             model.addAttribute("message", "");
             return "inputPrivateKey";
         }
+        User currentUser = userService.getUserByPrincipal(principal);
         Keys keysCurrentUser = (Keys) keys;
+        taskDto.getTask().setId(idTask);
+        try {
+            taskService.updateTaskDto(taskDto, currentUser, keysCurrentUser.getPrivateKey());
+        } catch (InputException e) {
+            throw new RuntimeException(e);
+        }
 
-        task.setId(idTask);
-        taskService.updateTaskAndAccesses(task, form.getAccesses(), taskService.getUserByPrincipal(principal), keysCurrentUser.getPrivateKey());
 
         return "redirect:/";
     }
@@ -164,10 +150,6 @@ public class TaskController {
         return "redirect:/";
     }
 
-
-    public void filterTaskAccessCreationDto(TaskAccessCreationDto tasks) {
-        tasks.getAccesses().removeIf(n -> (n.getUser() == null || n.getRole() == null));
-    }
 
 
 }

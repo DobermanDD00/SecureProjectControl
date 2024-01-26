@@ -25,7 +25,7 @@
 <!--</table>-->
 <h3>Создать новую задачу</h3>
 
-<form th:method="post" th:action="@{/task/save}" th:object="${taskCreationDto}">
+<form th:method="post" th:action="@{/task/save}" th:object="${taskDto}">
     <fieldset>
         <div>
             <label>Название: </label>

@@ -1,7 +1,7 @@
 package com.example.buysell.models.TaskPackage;
 
 import com.example.buysell.models.UserPackage.User;
-import com.example.buysell.models.inputException;
+import com.example.buysell.models.Exception.InputException;
 import com.example.buysell.repositories.TaskDb;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,7 +46,7 @@ public class TaskAccess {
      * @param mode STANDARD_MODE = 0 - стандартная полная проверка (id !=0 и taskKey != null),
      *             NEW_ACCESS_MODE = 1 - проверка для нового доступа (id мб == 0 и taskKey мб == null)
      */
-    public void checkAccess(int mode) throws inputException {
+    public void checkAccess(int mode) throws InputException {
         StringBuilder errorReport = new StringBuilder();
 
         if (mode == STANDARD_MODE && id == 0)
@@ -62,7 +62,7 @@ public class TaskAccess {
         }
 
         if (errorReport.length() > 0){
-            throw new inputException("Ошибка в доступе с id = "+id+"\n"+errorReport.toString());
+            throw new InputException("Ошибка в доступе с id = "+id+"\n"+errorReport.toString());
         }
 
 

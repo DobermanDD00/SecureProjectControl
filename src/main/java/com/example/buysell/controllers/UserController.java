@@ -55,7 +55,6 @@ public class UserController {
     @GetMapping("/user/{user}")
     public String userInfo(@PathVariable("user") User user, Model model) {
         model.addAttribute("user", user);
-//        model.addAttribute("products", user.getProducts());
         return "user-info";
     }
 
@@ -68,13 +67,14 @@ public class UserController {
         try {
             inputPrivateKey = Security.decodedKeyPrivateRsa(privkey.getBytes());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            log.warn("Введенное значение не является приватным ключом\n");
+            log.warn("Введенное значение не является приватным ключом");
             inputPrivateKey = null;
         }
         try {
             inputPrivateKey = Security.decodedKeyPrivateRsa(FileFunctions.readFile(currentUser.getName()+".txt"));
+            log.info("Ввод приватного ключа из файла");
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            log.warn("Введенное значение из файла не является приватным ключом\n");
+            log.warn("Введенное значение из файла не является приватным ключом");
             inputPrivateKey = null;
         }
 
@@ -83,21 +83,17 @@ public class UserController {
 
         if (inputPrivateKey == null || !(curUsrPubKey.equals(inputPrivPubKey))) {
             model.addAttribute("user", currentUser);
-            model.addAttribute("message", new String("Некорректный приватный ключ"));
+            model.addAttribute("message", "Некорректный приватный ключ");
             return "inputPrivateKey";
         }
+        log.info("Залогинен пользователь {} с приватным ключем", currentUser.getEmail());
         Keys keysCurrentUser = new Keys(inputPrivateKey, Security.getPublicKeyByPrivateKey(inputPrivateKey));
         httpSession.setAttribute("keysCurrentUser", keysCurrentUser);
 
         return "redirect:/";
     }
 
-    @GetMapping("/checkPriKey")
-    public String checkPriKey(HttpSession httpSession) {
-        Object privkey = httpSession.getAttribute("privkey");
 
-        return null;
-    }
 
 
 }

@@ -7,21 +7,21 @@
 <body>
 <h3>Редактировать задачу</h3>
 
-<form th:method="post" th:action="@{/task/update/} + ${task.id}" th:object="${task}">
+<form th:method="post" th:action="@{/task/update/} + ${taskDto.task.id}" th:object="${taskDto}">
     <fieldset>
         <div>
             <label>Название: </label>
-            <input type="text" th:field="*{title}" placeholder="Название задачи"/>
+            <input type="text" th:field="*{task.title}" placeholder="Название задачи"/>
         </div>
         <div>
             <label>Описание: </label>
-            <input type="text" th:field="*{description}" placeholder="Описание задачи"/>
+            <input type="text" th:field="*{task.description}" placeholder="Описание задачи"/>
         </div>
         <div>
             <label>Статус: </label>
-            <select th:field="*{status}">
+            <select th:field="*{task.status}">
                 <option th:value="0" selected="selected">Не выбрано</option>
-                <option th:each="status : ${statuses}"
+                <option th:each="status : ${listAllStatusesTask}"
                         th:text="${status.title}"
                         th:value="${status.id}"></option>
             </select>
@@ -29,7 +29,7 @@
 
 
         <!--Отображение списка для ввода-->
-        <form th:object="${form}" method="post">
+
             <!--        <form action="#" th:action="@{/create2}" th:object="${form}" method="post">-->
             <fieldset>
                 <table>
@@ -45,7 +45,7 @@
                         <td>
                             <select th:field="*{accesses[__${itemStat.index}__].role}">
                                 <option th:value="0" selected="selected">Не выбрано</option>
-                                <option th:each="role : ${rolesTask}"
+                                <option th:each="role : ${listAllUserRolesToTask}"
                                         th:text="${role.name}"
                                         th:value="${role.id}"></option>
                             </select>
@@ -53,12 +53,12 @@
                         <td>
                             <select th:field="*{accesses[__${itemStat.index}__].user}">
                                 <option th:value="0" selected="selected">Не выбрано</option>
-                                <option th:each="user : ${users}"
+                                <option th:each="user : ${listAllUsers}"
                                         th:text="${user.name}"
                                         th:value="${user.id}"></option>
                             </select>
                         </td>
-                        <td><input th:field="*{accesses[__${itemStat.index}__].str}"/></td>
+<!--                        <td><input th:field="*{accesses[__${itemStat.index}__].str}"/></td>-->
                     </tr>
                     </tbody>
                 </table>
@@ -66,9 +66,9 @@
                 <!--        <input type="reset" id="resetButton1" name="reset" th:value="Reset"/>-->
             </fieldset>
 
-        </form>
-        <input type="submit" id="submitButton2" th:value="Save">
+
         <input type="reset" id="resetButton2" name="reset" th:value="Reset"/>
+        <input type="submit" id="submitButton2" th:value="Save">
     </fieldset>
 </form>
 

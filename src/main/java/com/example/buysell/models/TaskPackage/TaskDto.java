@@ -1,18 +1,18 @@
 package com.example.buysell.models.TaskPackage;
 
-import com.example.buysell.models.inputException;
+import com.example.buysell.models.Exception.InputException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskCreationDto {
+public class TaskDto {
     private Task task = new Task();
     private List<TaskAccess> Accesses = new ArrayList<>();
     private String info = "";
@@ -24,7 +24,7 @@ public class TaskCreationDto {
         Accesses.removeIf(n -> n.getUser() == null || n.getRole() == null);
     }
     public void removeDuplicatesAccess() {
-        Accesses = Accesses.stream().collect(Collectors.toSet()).stream().collect(Collectors.toList());
+        Accesses = new ArrayList<>(new HashSet<>(Accesses));
     }
 
     /**
@@ -56,7 +56,7 @@ public class TaskCreationDto {
         removeEmptyAccesses();
         try {
             task.checkTask(Task.NEW_TASK_MODE);
-        } catch (inputException e) {
+        } catch (InputException e) {
             stringBuilder.append(e.getMessage());
         }
         if (Accesses.size() == 0) {
@@ -65,14 +65,11 @@ public class TaskCreationDto {
             Accesses.forEach(n -> {
                 try {
                     n.checkAccess(TaskAccess.NEW_ACCESS_MODE);
-                } catch (inputException e) {
+                } catch (InputException e) {
                     stringBuilder.append(e.getMessage());
                 }
             });
         }
-
-
-
 
         info = stringBuilder.toString();
         return info.length() == 0;

@@ -30,6 +30,8 @@ class UserServiceTest {
     @Test
     void initialize() {
         userService.initialize();
+        userService.initialize();
+        userService.initialize();
 
         PrivateKey privateKey = Security.decodedKeyPrivateRsa(FileFunctions.readFile("Михаил.txt"));
         User user = userRepository.findByName("Михаил");
@@ -57,7 +59,7 @@ class UserServiceTest {
         FileFunctions.writeFile(keyPair.getPrivate().getEncoded(), user.getName()+".txt");
 
 
-        User userGet = userService.getUserById(user.getId());
+        User userGet = userService.findById(user.getId());
 
 
         user.setName("1111");

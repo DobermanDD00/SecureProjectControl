@@ -43,6 +43,7 @@ public class TaskDb {
 
     private LocalDateTime dateOfCreated;
     @Column(name = "history")
+    @Lob
     private byte[] history;
 
 
