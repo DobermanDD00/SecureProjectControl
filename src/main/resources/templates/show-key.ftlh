@@ -8,7 +8,9 @@
 <h3>Имя пользователя: <i>${user.name}</i></h3>
 <h4>Публичный ключ: <i>${keyPublic}</i></h4>
 <h4>Приватный ключ: <i>${keyPrivate}</i></h4>
-
+<a href="/downloadPrivateKey">
+    <button>Visit Google</button>
+</a>
 </form>
 </body>
 </html>
