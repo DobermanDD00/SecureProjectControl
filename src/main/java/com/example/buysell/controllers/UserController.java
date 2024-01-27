@@ -51,64 +51,47 @@ public class UserController {
         model.addAttribute("user", user);
         model.addAttribute("keyPublic", new String(keyPair.getPublic().getEncoded()));
         model.addAttribute("keyPrivate", new String(keyPair.getPrivate().getEncoded()));
-        return "show-key";
-//        return "redirect:/login";
+
+
+//        return "show-key";
+        return "redirect:/login";
     }
+
+
 
     @GetMapping("/downloadPrivateKey")
-    public String downloadPrivateKey(HttpServletResponse response){
-        String  fileName="PrivateKey.txt";
-        FileFunctions.writeFile("12345".getBytes(), fileName);//Создать хоть какой-то файл
-        if(fileName !=null){
-            //Set file path
-            File file = new File( fileName);
-            if(file.exists()){
-                response.setContentType("application/force-download");
-                //Set mandatory download not to open
-                response.addHeader("Content-Disposiution","attachment;fileName="+fileName);
-                byte[] buffer = new byte[1024];
-                FileInputStream fis = null;
-                BufferedInputStream bis = null;
-                try {
-                    fis=new FileInputStream(file);
-                    bis =new BufferedInputStream(fis);
-                    OutputStream os = response.getOutputStream();
-                    int i = bis.read(buffer);
-                    while (i !=i){
-                        os.write(buffer,0,i);
-                        i=bis.read(buffer);
-                    }
-                    log.info("Загрузка файла приватного ключа успешно завешена");
-                    return "redirect:/";
-//                    return "download successful";
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }finally {
-                    if(bis !=null){
-                        try {
-                            bis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if(fis !=null){
-                        try {
-                            fis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
+    public String downloadPrivateKey(HttpServletResponse response, HttpSession httpSession, Model model, Principal principal) {
+        User userCurrent = userService.getUserByPrincipal(principal);
+
+        Object keys = httpSession.getAttribute("keysCurrentUser");
+        if (keys == null) {
+            model.addAttribute("message", "");
+            return "inputPrivateKey";
         }
-        log.warn("Загрузка файла приватного ключа провалена");
-        return "redirect:/";
-//        return "download failed";
+        Keys keysCurrentUser = (Keys) keys;
+
+        byte[] buffer = keysCurrentUser.getPrivateKey().getEncoded();
+        String fileName = "PrivateKey"+userCurrent.getEmail() + ".txt";
+
+        response.setContentLengthLong(buffer.length);
+        response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);
+        response.addHeader("Content-Transfer-Encoding", "binary");
+        response.addHeader("Expires", "0");
+        response.addHeader("Cache-Control", "no-cache");
+        response.addHeader("Pragma", "no-cache");
+
+        try {
+            OutputStream os = response.getOutputStream();
+            os.write(buffer, 0, buffer.length);
+            os.flush();
+            log.info("Загрузка файла приватного ключа успешно завешена");
+            return "redirect:/";
+        } catch (IOException e) {
+            log.warn("Загрузка файла приватного ключа провалена, проблемы с потоками");
+            e.printStackTrace();
+            return "redirect:/";
+        }
     }
-
-
 
 
     @GetMapping("/user/{user}")
@@ -165,7 +148,7 @@ public class UserController {
             log.warn("Введенное значение не является приватным ключом");
             inputPrivateKey = null;
         }
-        try {
+        try {// TODO удалить потом
             inputPrivateKey = Security.decodedKeyPrivateRsa(FileFunctions.readFile(currentUser.getName() + ".txt"));
             log.info("Ввод приватного ключа из файла");
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {

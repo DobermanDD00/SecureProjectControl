@@ -1,0 +1,71 @@
+ /**
+     * Сохранение файла на клиенте пользователя, именно файла с сервера.
+     */
+    @GetMapping("/downloadPrivateKey1")
+    public String downloadPrivateKey1(HttpServletResponse response, HttpSession httpSession, Model model, Principal principal) {
+        User userCurrent = userService.getUserByPrincipal(principal);
+
+        String fileName = userCurrent.getName() + ".txt";
+
+        Object keys = httpSession.getAttribute("keysCurrentUser");
+        if (keys == null) {
+            model.addAttribute("message", "");
+            return "inputPrivateKey";
+        }
+        Keys keysCurrentUser = (Keys) keys;
+
+        FileFunctions.writeFile(keysCurrentUser.getPrivateKey().getEncoded(), fileName);
+        File file = new File(fileName);
+
+
+        if (file.exists()) {
+            response.setContentLengthLong(file.length()); // <<<
+            response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);
+            response.addHeader("Content-Transfer-Encoding", "binary");
+            response.addHeader("Expires", "0");
+            response.addHeader("Cache-Control", "no-cache");
+            response.addHeader("Pragma", "no-cache");
+
+            byte[] buffer = new byte[1024];
+            FileInputStream fis = null;
+            BufferedInputStream bis = null;
+            try {
+                fis = new FileInputStream(file);
+                bis = new BufferedInputStream(fis);
+                OutputStream os = response.getOutputStream();
+                int i = bis.read(buffer);
+                while (i >= 0) { // <<<
+                    os.write(buffer, 0, i);
+                    i = bis.read(buffer);
+                }
+                os.flush();
+                log.info("Загрузка файла приватного ключа успешно завешена");
+                return null;  // <<<
+            } catch (IOException e) {
+                log.warn("Загрузка файла приватного ключа провалена, проблемы с файлом");
+
+                e.printStackTrace();
+            } finally {
+                if (bis != null) {
+                    try {
+                        bis.close();
+                    } catch (IOException e) {
+                        log.warn("Загрузка файла приватного ключа провалена, проблемы с файлом");
+                        e.printStackTrace();
+                    }
+                }
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        log.warn("Загрузка файла приватного ключа провалена, проблемы с файлом");
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        }
+
+        log.warn("Загрузка файла приватного ключа провалена");
+        return "redirect:/";
+    }
