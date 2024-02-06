@@ -94,7 +94,9 @@ public class TaskController {
         try {
             taskService.createTaskDto(taskDto, currentUser);
         } catch (InputException e) {
-            throw new RuntimeException(e);
+            log.warn("Ошибка при создании задачи");
+            e.printStackTrace();
+
         }
         return "redirect:/";
 
@@ -137,7 +139,8 @@ public class TaskController {
         try {
             taskService.updateTaskDto(taskDto, currentUser, keysCurrentUser.getPrivateKey());
         } catch (InputException e) {
-            throw new RuntimeException(e);
+            log.warn("Ошибка при обновлении задачи");
+            e.printStackTrace();
         }
 
 

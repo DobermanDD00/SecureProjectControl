@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Spring Boot Thymeleaf Application - Form Samples - Inputs</title>
+</head>
+<body>
+
+<h3>Регистрация</h3>
+
+<form th:method="post" th:action="@{/registration2}" th:object="${userDto}">
+    <fieldset>
+        <div>
+            <label>Имя пользователя: </label>
+            <input type="text" th:field="*{user.name}" placeholder="Название задачи"/>
+        </div>
+        <div>
+            <label>Эл. почта: </label>
+            <input type="text" th:field="*{user.email}" placeholder="Описание задачи"/>
+        </div>
+        <div>
+            <label>Номер телефона: </label>
+            <input type="text" th:field="*{user.phoneNumber}" placeholder="Описание задачи"/>
+        </div>
+        <div>
+            <label>Пароль: </label>
+            <input type="text" th:field="*{user.password}" placeholder="Описание задачи"/>
+        </div>
+
+        <input type="reset" id="resetButton2" name="reset" th:value="Reset"/>
+        <input type="submit" id="submitButton2" th:value="Save">
+    </fieldset>
+    <span th:text="*{info}" style="white-space: pre-line"></span>
+</form>
+</body>
+</html>

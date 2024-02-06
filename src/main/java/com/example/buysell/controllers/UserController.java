@@ -3,17 +3,16 @@ package com.example.buysell.controllers;
 import com.example.buysell.models.Security.Keys;
 import com.example.buysell.models.Security.Security;
 import com.example.buysell.models.UserPackage.User;
+import com.example.buysell.models.UserPackage.UserDto;
 import com.example.buysell.repositories.FileFunctions;
 import com.example.buysell.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +26,8 @@ import java.security.spec.InvalidKeySpecException;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
+
 
     @GetMapping("/login")
     public String login() {
@@ -45,6 +46,7 @@ public class UserController {
         KeyPair keyPair = Security.generatedRsaKeys();
         if (!userService.createUser(user, keyPair)) {
             model.addAttribute("errorMessage", "Пользователь с email: " + user.getEmail() + " уже существует");
+            log.info("Регистрация нового пользователя провалена, пользователь с email: {}  уже существует" + user.getEmail());
             return "registration";
         }
         // TODO 000 вывод приватного ключа или сохранение в файле
@@ -57,16 +59,51 @@ public class UserController {
         return "redirect:/login";
     }
 
+    @SneakyThrows
+    @PostMapping("/registration2")
+    public String registration1(@ModelAttribute UserDto userDto, HttpServletResponse response, HttpSession httpSession, Model model, Principal principal) {
+        KeyPair keyPair = Security.generatedRsaKeys();
+        if (!userService.createUser(userDto.getUser(), keyPair)) {
+            model.addAttribute("userDto", userDto);
+            log.warn("Регистрация нового пользователя провалена, пользователь с email: {}  уже существует" + userDto.getUser().getEmail());
+            return "user-create";
+        }
+
+        userDto.setPublicKey(keyPair.getPublic());
+        userDto.setPrivateKey(keyPair.getPrivate());
+        model.addAttribute("userDto", userDto);
+        model.addAttribute("PrivateKey", new String(userDto.getPrivateKey().getEncoded()));
+        model.addAttribute("PublicKey", new String(userDto.getPublicKey().getEncoded()));
+        return "show-key";
+
+//        // TODO 000 вывод приватного ключа или сохранение в файле
+//        model.addAttribute("user", user);
+//        model.addAttribute("keyPublic", new String(keyPair.getPublic().getEncoded()));
+//        model.addAttribute("keyPrivate", new String(keyPair.getPrivate().getEncoded()));
+//
+//
+////        return "show-key";
+//        return "user-create";
+////        return "redirect:/login";
+    }
+
+    @GetMapping("/registration1")
+    public String registration1(Model model) {
+        model.addAttribute("userDto", new UserDto());
+        return "user-create";
+    }
+
+
 
 
     @GetMapping("/downloadPrivateKey")
-    public String downloadPrivateKey(HttpServletResponse response, HttpSession httpSession, Model model, Principal principal) {
+    public void downloadPrivateKey(HttpServletResponse response, HttpSession httpSession, Model model, Principal principal) {
         User userCurrent = userService.getUserByPrincipal(principal);
 
         Object keys = httpSession.getAttribute("keysCurrentUser");
         if (keys == null) {
             model.addAttribute("message", "");
-            return "inputPrivateKey";
+            return ;
         }
         Keys keysCurrentUser = (Keys) keys;
 
@@ -85,11 +122,43 @@ public class UserController {
             os.write(buffer, 0, buffer.length);
             os.flush();
             log.info("Загрузка файла приватного ключа успешно завешена");
-            return "redirect:/";
+            return ;
         } catch (IOException e) {
             log.warn("Загрузка файла приватного ключа провалена, проблемы с потоками");
             e.printStackTrace();
-            return "redirect:/";
+            return ;
+        }
+    }
+
+    @PostMapping("/downloadPrivateKey2")
+    public void downloadPrivateKey2(@ModelAttribute UserDto userDto, HttpServletResponse response) {
+        if (!userDto.isCorrect()) {
+            log.info("Загрузка файла приватного ключа провалена, проблемы с value userDto");
+            return;
+        }
+
+        User userCurrent = userDto.getUser();
+
+        byte[] buffer = userDto.getPrivateKey().getEncoded();
+        String fileName = "PrivateKey" + userCurrent.getEmail() + ".txt";
+
+        response.setContentLengthLong(buffer.length);
+        response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);
+        response.addHeader("Content-Transfer-Encoding", "binary");
+        response.addHeader("Expires", "0");
+        response.addHeader("Cache-Control", "no-cache");
+        response.addHeader("Pragma", "no-cache");
+
+        try {
+            OutputStream os = response.getOutputStream();
+            os.write(buffer, 0, buffer.length);
+            os.flush();
+            log.info("Загрузка файла приватного ключа успешно завешена");
+            return;
+        } catch (IOException e) {
+            log.warn("Загрузка файла приватного ключа провалена, проблемы с потоками");
+            e.printStackTrace();
+            return;
         }
     }
 

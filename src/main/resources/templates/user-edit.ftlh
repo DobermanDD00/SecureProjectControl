@@ -4,7 +4,7 @@
     <title>Task Manager</title>
 </head>
 <body>
-<h1><a href="/">Task Manager</a></h1>
+<h1><a href="/">Project Manager</a></h1>
 <h3>Редактирование пользователя ${user.name}</h3>
 <form action="/admin/user/edit" method="post">
     <#list roles as role>

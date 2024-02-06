@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Task Manager</title>
+    <title>Project Manager</title>
 </head>
 <body>
-<h1><a href="/">Task Manager</a></h1>
+<h1><a href="/">Project Manager</a></h1>
 <h4>Регистрация</h4>
 <form action="/registration" method="post">
     Имя пользователя: <input type="text" name="name"><br><br>

@@ -22,7 +22,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
 //                .antMatchers("/", "/tasks/**", "/images/**", "/registration","/initialize", "/user/**")
-                .antMatchers("/initialize", "/registration", "/downloadPrivateKey")
+                .antMatchers("/initialize", "/registration","/registration1","/registration2",  "/downloadPrivateKey", "/downloadPrivateKey2")
+//                .antMatchers("/*")
                 .permitAll()
                 .anyRequest().authenticated()
                 .and()
