@@ -4,7 +4,7 @@
     <title>Task Manager</title>
 </head>
 <body>
-<h1><a href="/">Task Manager</a></h1>
+<h1><a href="/">Project Manager</a></h1>
 <h3>Подробная информация о пользователе ${user.name}</h3>
 <b>Номер телефона: </b> ${user.phoneNumber}<br>
 <b>Email: </b> ${user.email}<br>

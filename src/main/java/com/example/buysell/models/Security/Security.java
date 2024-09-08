@@ -93,7 +93,8 @@ public class Security {
         KeyPairGenerator keyPairGenerator;
         keyPairGenerator = KeyPairGenerator.getInstance("RSA");
 
-        keyPairGenerator.initialize(4096);
+        keyPairGenerator.initialize(1024);
+//        keyPairGenerator.initialize(4096);
         return keyPairGenerator.generateKeyPair();
     }
 
@@ -123,7 +124,14 @@ public class Security {
     }
 
     public static boolean isCorrectPairKeys(PublicKey publicKey, PrivateKey privateKey) {
-        return (getPublicKeyByPrivateKey(privateKey).equals(publicKey));
+        PublicKey publicKey1;
+        try {
+            publicKey1 = getPublicKeyByPrivateKey(privateKey);
+        }catch (Exception e){
+            return false;
+        }
+
+        return (publicKey1.equals(publicKey));
     }
 
 

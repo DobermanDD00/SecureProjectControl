@@ -1,16 +1,31 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://thymeleaf.org">
 <head>
-    <title>Private Key</title>
+    <meta charset="UTF-8"/>
+    <title>Spring Boot Thymeleaf Application - Form Samples - Inputs</title>
 </head>
 <body>
-<h1><a href="/">Private Key</a></h1>
-<hr>
-<h3>Имя пользователя: <i>${user.name}</i></h3>
-<h4>Публичный ключ: <i>${keyPublic}</i></h4>
-<h4>Приватный ключ: <i>${keyPrivate}</i></h4>
-<a href="/downloadPrivateKey">
-    <button>Visit Google</button>
-</a>
+
+<h3>Создан пользователь</h3>
+
+<form th:method="post" th:action="@{/downloadPrivateKey2}" th:object="${userDto.getUser()}">
+    <fieldset>
+        <div>
+            <label>Имя пользователя: </label>
+            <span th:text="*{name}"></span>
+        </div>
+        <div>
+            <label>Публичный ключ: </label>
+            <span th:text="${PublicKey}"></span>
+        </div>
+        <div>
+            <label>Приватный ключ: </label>
+            <span th:text="${PrivateKey}"></span>
+        </div>
+        <input type="reset" id="resetButton2" name="reset" th:value="Reset"/>
+        <input type="submit" id="submitButton2" th:value="Download private key">
+    </fieldset>
+    <span th:text="*{info}" style="white-space: pre-line"></span>
 </form>
 </body>
 </html>

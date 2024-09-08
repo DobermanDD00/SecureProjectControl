@@ -85,7 +85,7 @@ public class TaskService {
 
 
         long idTask = saveTaskAndAccesses(task, taskDto.getAccesses(), taskKey);
-        log.info("Сохранение задачи и доступов. idTask: {}", idTask);
+//        log.info("Сохранение задачи и доступов. idTask: {}", idTask); TODO //*********************************
 
     }
 

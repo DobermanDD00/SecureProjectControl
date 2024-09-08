@@ -31,6 +31,7 @@ public class TaskDb {
     @Column(name = "title")
 
     private byte[] title;
+    @Lob
     @Column(name = "description")
     private byte[] description;
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)

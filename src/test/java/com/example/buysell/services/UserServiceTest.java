@@ -40,10 +40,8 @@ class UserServiceTest {
         PublicKey pubByPri = Security.getPublicKeyByPrivateKey(privateKey);
         Assertions.assertEquals(publicKey, pubByPri);
 
-
-
-
     }
+
 
     @SneakyThrows
     @Test

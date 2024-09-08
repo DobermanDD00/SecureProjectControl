@@ -58,11 +58,11 @@ public class Task {
         if (mode == STANDARD_MODE && id == 0)
             errorReport.append("Ошибка, id задачи не может быть равно '0'\n");
 
-        if (title.length() == 0) {
+        if (title == null || title.length() == 0) {
             errorReport.append("Ошибка, название задачи не может быть пустым\n");
             //Потом дописать проверки, что название не состоит из одних пробелов
         }
-        if (description.length() == 0) {
+        if (description == null || description.length() == 0) {
             errorReport.append("Ошибка, описание задачи не может быть пустым\n");
             //Потом дописать проверки, что описание не состоит из одних пробелов
         }

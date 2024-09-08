@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-    <title>Task Manager</title>
+    <title>Project Manager</title>
 </head>
 <body>
 <h1><a href="/">Task Manager</a></h1>

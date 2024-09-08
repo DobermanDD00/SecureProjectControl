@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Task Manager</title>
+    <title>Project Manager</title>
 </head>
 <body>
-<h1><a href="/">Task Manager</a></h1>
+<h1><a href="/">Project Manager</a></h1>
 <h4>Авторизация</h4>
 <form action="/login" method="post">
     Эл. почта: <input type="email" name="username"><br><br>
