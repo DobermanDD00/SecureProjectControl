@@ -130,7 +130,7 @@ public class TaskService {
 
         deleteAllAccessesByTaskId(idTask);
         saveTaskAndAccesses(oldTask, newTaskDto.getAccesses(), taskKey);
-        log.info("Обновление задачи и доступов. idTask: {}", idTask);
+//        log.info("Обновление задачи и доступов. idTask: {}", idTask); TODO //******************
 
 
     }
